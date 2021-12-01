@@ -20,6 +20,4 @@ let part2 =
   |> sum_list
 
 
-let () =
-  print_endline (Int.to_string part1) ;
-  print_endline (Int.to_string part2)
+let () = Printf.printf "part1=%d; part2=%d" part1 part2
