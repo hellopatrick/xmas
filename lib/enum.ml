@@ -1,8 +1,7 @@
 open Base
 
-let rec window n l =
-  match l with
+let rec window n = function
   | [] ->
       []
-  | _ :: tl ->
+  | _ :: tl as l ->
       if List.length l >= n then List.take l n :: window n tl else []
