@@ -11,16 +11,7 @@ let sum_list = List.fold ~init:0 ~f:Int.( + )
 
 let part1 = input |> List.folding_map ~init:0 ~f:map |> sum_list
 
-let slide3 list =
-  let rec helper list state =
-    match list with
-    | a :: b :: c :: tail ->
-        helper (b :: c :: tail) ([ a; b; c ] :: state)
-    | _ ->
-        state
-  in
-  helper list [] |> List.rev
-
+let slide3 = Xmas.Enum.window 3
 
 let part2 =
   input

@@ -1,2 +1,3 @@
 (library
- (name xmas))
+ (name xmas)
+ (libraries base))
