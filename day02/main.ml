@@ -9,16 +9,18 @@ module Direction = struct
     | Down of int
 
   let of_string str =
-    let parts = String.split ~on:' ' str in
-    match parts with
-    | [ "forward"; n ] ->
-        Forward (Int.of_string n)
-    | [ "up"; n ] ->
-        Up (Int.of_string n)
-    | [ "down"; n ] ->
-        Down (Int.of_string n)
-    | _ ->
-        raise (Failure "unreachable")
+    let parse dir amt =
+      match dir with
+      | "forward" ->
+          Forward amt
+      | "up" ->
+          Up amt
+      | "down" ->
+          Down amt
+      | _ ->
+          raise (Failure "unsupported direction")
+    in
+    Scanf.sscanf str "%s %d" parse
 end
 
 let input =
