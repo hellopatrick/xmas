@@ -29,8 +29,7 @@ let draw_line map ((x0, y0), (x1, y1)) =
         (y + sy)
     else map
   in
-  let m = draw map x0 y0 in
-  m
+  draw map x0 y0
 
 
 let part1 =
