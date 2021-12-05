@@ -20,8 +20,10 @@ let compare sx a b = if sx > 0 then a <= b else if sx = 0 then a = b else a >= b
 let draw_line map ((x0, y0), (x1, y1)) =
   let sx = sign (x1 - x0) in
   let sy = sign (y1 - y0) in
+  let can_draw_x = compare sx in
+  let can_draw_y = compare sy in
   let rec draw map x y =
-    if compare sx x x1 && compare sy y y1
+    if can_draw_x x x1 && can_draw_y y y1
     then
       draw
         (Map.update map (x, y) ~f:(function Some v -> v + 1 | None -> 1))
