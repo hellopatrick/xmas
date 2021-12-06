@@ -14,7 +14,7 @@ let process fishes =
   | [ zero; one; two; three; four; five; six; seven; eight ] ->
       [ one; two; three; four; five; six; seven + zero; eight; zero ]
   | _ ->
-      raise (Failure "unreachable")
+      raise Xmas.Exc.Unreachable
 
 
 let rec spawn fishes n =
