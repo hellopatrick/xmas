@@ -6,16 +6,13 @@ let input =
   let f s = String.to_list s |> List.map ~f in
   List.map ~f lines
 
-
 let bitlist_to_int =
   let f curr bit = Int.bit_or (Int.shift_left curr 1) bit in
   List.fold ~init:0 ~f
 
-
 let part1 =
   let counts =
-    input
-    |> List.transpose_exn
+    input |> List.transpose_exn
     |> List.map
          ~f:
            (List.fold ~init:(0, 0) ~f:(fun (c0, c1) c ->
@@ -33,7 +30,6 @@ let part1 =
   in
   gamma * epsilon
 
-
 let part2 =
   let filter ls n chooser =
     let len = List.length ls in
@@ -46,7 +42,7 @@ let part2 =
     match l with
     | [] ->
         raise (Failure "?")
-    | [ ans ] ->
+    | [ans] ->
         ans
     | _ ->
         helper (filter l n chooser) (n + 1) chooser
@@ -60,6 +56,5 @@ let part2 =
     |> bitlist_to_int
   in
   o2 * co2
-
 
 let () = Printf.printf "part1=%d; part2=%d" part1 part2
