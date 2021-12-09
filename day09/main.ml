@@ -29,18 +29,14 @@ let part1 =
 
 
 let basin_size map start =
-  let rec aux filled (x, y) =
-    match Coords.Map.find map (x, y) with
+  let rec aux filled pt =
+    match Coords.Map.find map pt with
     | Some 9 ->
         filled
     | Some _ ->
-        if Coords.Set.mem filled (x, y)
+        if Coords.Set.mem filled pt
         then filled
-        else
-          List.fold
-            ~init:(Coords.Set.add filled (x, y))
-            ~f:aux
-            (neighbors (x, y))
+        else List.fold ~init:(Coords.Set.add filled pt) ~f:aux (neighbors pt)
     | None ->
         filled
   in
