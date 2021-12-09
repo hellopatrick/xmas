@@ -8,3 +8,12 @@ let rec window n = function
 
 
 let sum = List.fold ~init:0 ~f:Int.( + )
+
+let all l ~f =
+  let rec aux = function
+    | hd :: tl ->
+        if f hd then aux tl else false
+    | _ ->
+        true
+  in
+  aux l
