@@ -25,6 +25,8 @@ let parse chars =
   in
   aux chars []
 
+let invalid_chars, incomplete = List.partition_map input ~f:parse
+
 let part1 =
   let score = function
     | ')' -> 3
@@ -33,8 +35,7 @@ let part1 =
     | '>' -> 25137
     | _ -> raise Xmas.Exc.Unreachable
   in
-  List.filter_map input ~f:(fun line -> parse line |> Either.First.to_option)
-  |> List.map ~f:score |> Xmas.Enum.sum
+  invalid_chars |> List.map ~f:score |> Xmas.Enum.sum
 
 let autocomplete_score =
   let score = function
@@ -47,11 +48,10 @@ let autocomplete_score =
   List.fold ~init:0 ~f:(fun acc c -> (acc * 5) + score c)
 
 let part2 =
-  let incomplete =
-    List.filter_map input ~f:(fun line -> parse line |> Either.Second.to_option)
-  in
   let scores =
-    List.map ~f:autocomplete_score incomplete |> List.sort ~compare:Int.compare
+    incomplete
+    |> List.map ~f:autocomplete_score
+    |> List.sort ~compare:Int.compare
   in
   let len = List.length scores in
   List.nth_exn scores (len / 2)
