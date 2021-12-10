@@ -16,7 +16,7 @@ let part1 =
     |> List.map
          ~f:
            (List.fold ~init:(0, 0) ~f:(fun (c0, c1) c ->
-                if c = 0 then (c0 + 1, c1) else (c0, c1 + 1) ) )
+                if c = 0 then (c0 + 1, c1) else (c0, c1 + 1)))
   in
   let gamma =
     counts
@@ -40,12 +40,9 @@ let part2 =
   in
   let rec helper l n chooser =
     match l with
-    | [] ->
-        raise (Failure "?")
-    | [ans] ->
-        ans
-    | _ ->
-        helper (filter l n chooser) (n + 1) chooser
+    | [] -> raise (Failure "?")
+    | [ ans ] -> ans
+    | _ -> helper (filter l n chooser) (n + 1) chooser
   in
   let o2 =
     helper input 0 (fun c0 len -> if c0 > len / 2 then 0 else 1)
