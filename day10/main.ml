@@ -37,17 +37,17 @@ let part1 =
   in
   invalid_chars |> List.map ~f:score |> Xmas.Enum.sum
 
-let autocomplete_score =
-  let score = function
-    | '(' -> 1
-    | '[' -> 2
-    | '{' -> 3
-    | '<' -> 4
-    | _ -> raise Xmas.Exc.Unreachable
-  in
-  List.fold ~init:0 ~f:(fun acc c -> (acc * 5) + score c)
-
 let part2 =
+  let autocomplete_score =
+    let score = function
+      | '(' -> 1
+      | '[' -> 2
+      | '{' -> 3
+      | '<' -> 4
+      | _ -> raise Xmas.Exc.Unreachable
+    in
+    List.fold ~init:0 ~f:(fun acc c -> (acc * 5) + score c)
+  in
   let scores =
     incomplete
     |> List.map ~f:autocomplete_score
