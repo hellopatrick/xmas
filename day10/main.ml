@@ -4,9 +4,6 @@ let input =
   In_channel.read_lines "./input/day10.txt" |> List.map ~f:String.to_list
 
 let parse chars =
-  let is_start c =
-    List.exists [ '['; '{'; '('; '<' ] ~f:(fun c' -> Char.equal c c')
-  in
   let is_pair a b =
     match (a, b) with
     | '<', '>' | '(', ')' | '{', '}' | '[', ']' -> true
@@ -15,13 +12,16 @@ let parse chars =
   let rec aux chars history =
     match chars with
     | [] -> Either.Second.return history
+    | ('(' as hd) :: tl
+    | ('[' as hd) :: tl
+    | ('{' as hd) :: tl
+    | ('<' as hd) :: tl ->
+        aux tl (hd :: history)
     | hd :: tl -> (
-        if is_start hd then aux tl (hd :: history)
-        else
-          match history with
-          | [] -> Either.First.return hd
-          | hd' :: tl' ->
-              if is_pair hd' hd then aux tl tl' else Either.First.return hd)
+        match history with
+        | [] -> Either.First.return hd
+        | hd' :: tl' ->
+            if is_pair hd' hd then aux tl tl' else Either.First.return hd)
   in
   aux chars []
 
