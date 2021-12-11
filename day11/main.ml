@@ -13,12 +13,7 @@ let input =
                 CM.add_exn m ~key:(j, i) ~data:(Age v)))
 
 let age =
-  let f = function
-    | Age 9 -> Flashing
-    | Age v -> Age (v + 1)
-    | Flashing -> Flashed
-    | Flashed -> Flashed
-  in
+  let f = function Age 9 -> Flashing | Age v -> Age (v + 1) | _ -> Flashed in
   CM.map ~f
 
 let find_neighbors (x, y) =
@@ -46,7 +41,7 @@ let print m =
 
 let handle m =
   let rec aux m =
-    let flashed =
+    let m' =
       CM.mapi m ~f:(fun ~key ~data ->
           match data with
           | Age v ->
@@ -59,13 +54,11 @@ let handle m =
           | otherwise -> otherwise)
       |> CM.map ~f:(function
            | Age v when v > 9 -> Flashing
-           | Age v -> Age v
-           | _ -> Flashed)
+           | Flashing -> Flashed
+           | state -> state)
     in
-    let has_flashing =
-      CM.exists flashed ~f:(function Flashing -> true | _ -> false)
-    in
-    if has_flashing then aux flashed else flashed
+    let has_flashing = CM.exists m' ~f:(phys_equal Flashing) in
+    if has_flashing then aux m' else m'
   in
   aux (age m)
 
@@ -75,24 +68,22 @@ let reset =
     | Flashing -> failwith "cannot reset flashing"
     | age -> age)
 
-let part1 =
-  let rec aux m r total =
-    if r > 0 then
-      let m' = handle m in
-      let dt = CM.count ~f:(function Flashed -> true | _ -> false) m' in
-      aux (reset m') (r - 1) (total + dt)
-    else total
-  in
-  aux input 100 0
+let _ =
+  Xmas.Benchmark.time "part1=%d" (fun _ ->
+      let rec aux m r total =
+        if r > 0 then
+          let m' = handle m in
+          let dt = CM.count ~f:(phys_equal Flashed) m' in
+          aux (reset m') (r - 1) (total + dt)
+        else total
+      in
+      aux input 100 0)
 
-let part2 =
-  let rec aux m r =
-    let m' = handle m in
-    let all_flashed =
-      CM.for_all m' ~f:(function Flashed -> true | _ -> false)
-    in
-    if all_flashed then r else aux (reset m') (r + 1)
-  in
-  aux input 1
-
-let _ = Printf.printf "part1 = %d; part2 = %d" part1 part2
+let _ =
+  Xmas.Benchmark.time "part2=%d" (fun _ ->
+      let rec aux m r =
+        let m' = handle m in
+        let all_flashed = CM.for_all m' ~f:(phys_equal Flashed) in
+        if all_flashed then r else aux (reset m') (r + 1)
+      in
+      aux input 1)
