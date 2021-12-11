@@ -5,7 +5,7 @@ module CM = Coords.Map
 type state = Age of int | Flashing | Flashed
 
 let input =
-  In_channel.read_lines "./input/day11.txt"
+  In_channel.input_lines In_channel.stdin
   |> List.foldi ~init:CM.empty ~f:(fun i m row ->
          row |> String.to_list
          |> List.map ~f:(fun c -> Char.to_int c - 48)
@@ -68,22 +68,22 @@ let reset =
     | Flashing -> failwith "cannot reset flashing"
     | age -> age)
 
-let _ =
-  Xmas.Benchmark.time "part1=%d" (fun _ ->
-      let rec aux m r total =
-        if r > 0 then
-          let m' = handle m in
-          let dt = CM.count ~f:(phys_equal Flashed) m' in
-          aux (reset m') (r - 1) (total + dt)
-        else total
-      in
-      aux input 100 0)
+let part1 =
+  let rec aux m r total =
+    if r > 0 then
+      let m' = handle m in
+      let dt = CM.count ~f:(phys_equal Flashed) m' in
+      aux (reset m') (r - 1) (total + dt)
+    else total
+  in
+  aux input 100 0
 
-let _ =
-  Xmas.Benchmark.time "part2=%d" (fun _ ->
-      let rec aux m r =
-        let m' = handle m in
-        let all_flashed = CM.for_all m' ~f:(phys_equal Flashed) in
-        if all_flashed then r else aux (reset m') (r + 1)
-      in
-      aux input 1)
+let part2 =
+  let rec aux m r =
+    let m' = handle m in
+    let all_flashed = CM.for_all m' ~f:(phys_equal Flashed) in
+    if all_flashed then r else aux (reset m') (r + 1)
+  in
+  aux input 1
+
+let _ = Printf.printf "part1=%d;part2=%d" part1 part2

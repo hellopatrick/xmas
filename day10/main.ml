@@ -1,7 +1,7 @@
 open Core
 
 let input =
-  In_channel.read_lines "./input/day10.txt" |> List.map ~f:String.to_list
+  In_channel.input_lines In_channel.stdin |> List.map ~f:String.to_list
 
 let parse chars =
   let is_pair a b =
@@ -56,4 +56,4 @@ let part2 =
   let len = List.length scores in
   List.nth_exn scores (len / 2)
 
-let _ = Printf.printf "part1 = %d; part2 = %d" part1 part2
+let _ = Printf.printf "part1=%d;part2=%d" part1 part2

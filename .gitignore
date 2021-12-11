@@ -1,2 +1,3 @@
 _build/
 input/
+test/*/input
