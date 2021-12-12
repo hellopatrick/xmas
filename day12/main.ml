@@ -1,15 +1,13 @@
 open Core
 
-let is_uppercase str = String.equal str (String.uppercase str)
-
 module Cave = struct
   type t = Large of string | Small of string [@@deriving show, eq, ord]
   type link = { start : t; finish : t }
 
   (* now stringable *)
-  let of_string = function
-    | str when is_uppercase str -> Large str
-    | str -> Small str
+  let of_string =
+    let is_large_cave str = String.equal str (String.uppercase str) in
+    function str when is_large_cave str -> Large str | str -> Small str
 
   let to_string = show
 
@@ -32,27 +30,30 @@ module Cave = struct
   let start = Small "start"
   let finish = Small "end"
   let is_end = equal finish
+  let is_large = function Large _ -> true | _ -> false
+  let hash t = String.hash (to_string t)
 end
 
-module NodeMap = Map.Make (Cave)
 module NodeSet = Set.Make (Cave)
+module NodeTable = Hashtbl.Make (Cave)
 
 let create_adjacency_list links =
-  List.fold links ~init:NodeMap.empty ~f:(fun m Cave.{ start; finish } ->
-      let m =
-        NodeMap.update m start ~f:(function
-          | Some nodes -> NodeSet.add nodes finish
-          | None -> NodeSet.of_list [ finish ])
+  let table = NodeTable.create () in
+  List.iter links ~f:(fun Cave.{ start; finish } ->
+      let update_with a set =
+        match set with
+        | Some nodes -> NodeSet.add nodes a
+        | None -> NodeSet.of_list [ a ]
       in
-      NodeMap.update m finish ~f:(function
-        | Some nodes -> NodeSet.add nodes start
-        | None -> NodeSet.of_list [ start ]))
+      NodeTable.update table start ~f:(update_with finish);
+      NodeTable.update table finish ~f:(update_with start));
+  table
 
 let input = In_channel.input_lines In_channel.stdin |> List.map ~f:Cave.parse
 let adj_list = create_adjacency_list input
 
 let dfs m =
-  let find = NodeMap.find_exn m in
+  let find = NodeTable.find_exn m in
   let rec aux node visited path complete =
     if Cave.is_end node then List.rev (node :: path) :: complete
     else
@@ -61,13 +62,10 @@ let dfs m =
       if NodeSet.is_empty next then complete
       else
         let visited =
-          match node with
-          | Cave.Large _ -> visited
-          | _ -> NodeSet.add visited node
+          if Cave.is_large node then visited else NodeSet.add visited node
         in
-        let path = node :: path in
-        NodeSet.fold next ~init:complete ~f:(fun complete node ->
-            aux node visited path complete)
+        let f acc node = aux node visited (node :: path) acc in
+        NodeSet.fold next ~init:complete ~f
   in
   aux Cave.start NodeSet.empty [] []
 
