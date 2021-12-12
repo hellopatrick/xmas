@@ -34,40 +34,40 @@ module Cave = struct
   let hash t = String.hash (to_string t)
 end
 
-module NodeSet = Set.Make (Cave)
-module NodeTable = Hashtbl.Make (Cave)
+module CaveSet = Set.Make (Cave)
+module CaveTable = Hashtbl.Make (Cave)
 
 let create_adjacency_list links =
-  let table = NodeTable.create () in
+  let table = CaveTable.create () in
   List.iter links ~f:(fun Cave.{ start; finish } ->
       let update_with a set =
         match set with
-        | Some nodes -> NodeSet.add nodes a
-        | None -> NodeSet.of_list [ a ]
+        | Some nodes -> CaveSet.add nodes a
+        | None -> CaveSet.of_list [ a ]
       in
-      NodeTable.update table start ~f:(update_with finish);
-      NodeTable.update table finish ~f:(update_with start));
+      CaveTable.update table start ~f:(update_with finish);
+      CaveTable.update table finish ~f:(update_with start));
   table
 
 let input = In_channel.input_lines In_channel.stdin |> List.map ~f:Cave.parse
 let adj_list = create_adjacency_list input
 
 let dfs m =
-  let find = NodeTable.find_exn m in
+  let find = CaveTable.find_exn m in
   let rec aux node visited path complete =
     if Cave.is_end node then List.rev (node :: path) :: complete
     else
       let adjacent = find node in
-      let next = NodeSet.diff adjacent visited in
-      if NodeSet.is_empty next then complete
+      let next = CaveSet.diff adjacent visited in
+      if CaveSet.is_empty next then complete
       else
         let visited =
-          if Cave.is_large node then visited else NodeSet.add visited node
+          if Cave.is_large node then visited else CaveSet.add visited node
         in
         let f acc node = aux node visited (node :: path) acc in
-        NodeSet.fold next ~init:complete ~f
+        CaveSet.fold next ~init:complete ~f
   in
-  aux Cave.start NodeSet.empty [] []
+  aux Cave.start CaveSet.empty [] []
 
 let paths = dfs adj_list
 let part1 = List.length paths
