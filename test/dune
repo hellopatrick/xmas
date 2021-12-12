@@ -5,3 +5,7 @@
 (cram
  (applies_to day11)
  (deps %{bin:day11}))
+
+(cram
+ (applies_to day12)
+ (deps %{bin:day12}))
