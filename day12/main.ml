@@ -34,6 +34,10 @@ module Cave = struct
   let hash t = String.hash (to_string t)
 end
 
+module Path = struct
+  type t = Cave.t list [@@deriving show]
+end
+
 module CaveSet = Set.Make (Cave)
 module CaveTable = Hashtbl.Make (Cave)
 
@@ -64,7 +68,8 @@ let dfs m =
         let visited =
           if Cave.is_large node then visited else CaveSet.add visited node
         in
-        let f acc node = aux node visited (node :: path) acc in
+        let path = node :: path in
+        let f acc node = aux node visited path acc in
         CaveSet.fold next ~init:complete ~f
   in
   aux Cave.start CaveSet.empty [] []
