@@ -1,7 +1,9 @@
 open Core
 
 module Cave = struct
-  type t = Large of string | Small of string [@@deriving show, eq, ord]
+  type t = Large of string | Small of string
+  [@@deriving show, eq, ord, sexp, hash]
+
   type link = { start : t; finish : t }
 
   (* now stringable *)
@@ -10,36 +12,19 @@ module Cave = struct
     function str when is_large_cave str -> Large str | str -> Small str
 
   let to_string = show
-
-  (* how to do this via Sexapble.of_stringable? *)
-  let t_of_sexp sexp =
-    match sexp with
-    | Sexp.Atom s -> ( try of_string s with exn -> of_sexp_error_exn exn sexp)
-    | Sexp.List _ ->
-        of_sexp_error
-          "Sexpable.Of_stringable.t_of_sexp expected an atom, but got a list"
-          sexp
-
-  let sexp_of_t t = Sexp.Atom (to_string t)
-
-  let parse l =
-    match String.split ~on:'-' l with
-    | s :: e :: _ -> { start = of_string s; finish = of_string e }
-    | _ -> failwith "unreachable"
-
   let start = Small "start"
   let finish = Small "end"
   let is_end = equal finish
   let is_large = function Large _ -> true | _ -> false
-  let hash t = String.hash (to_string t)
 end
 
 module Path = struct
-  type t = Cave.t list
+  type t = { start : Cave.t; finish : Cave.t }
 
-  let show t =
-    List.map t ~f:(function Cave.Small s -> s | Cave.Large l -> l)
-    |> String.concat ~sep:"-"
+  let of_string t =
+    match String.split ~on:'-' t with
+    | s :: e :: _ -> { start = Cave.of_string s; finish = Cave.of_string e }
+    | _ -> failwith "unreachable"
 end
 
 module CaveSet = Set.Make (Cave)
@@ -48,7 +33,7 @@ module CaveMap = Map.Make (Cave)
 
 let create_adjacency_list links =
   let table = CaveTable.create () in
-  List.iter links ~f:(fun Cave.{ start; finish } ->
+  List.iter links ~f:(fun Path.{ start; finish } ->
       let update_with a set =
         match set with
         | Some nodes -> CaveSet.add nodes a
@@ -58,7 +43,9 @@ let create_adjacency_list links =
       CaveTable.update table finish ~f:(update_with start));
   table
 
-let input = In_channel.input_lines In_channel.stdin |> List.map ~f:Cave.parse
+let input =
+  In_channel.input_lines In_channel.stdin |> List.map ~f:Path.of_string
+
 let adj_list = create_adjacency_list input
 
 let part1 =
