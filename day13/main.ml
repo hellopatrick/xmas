@@ -47,14 +47,12 @@ let fold paper instruction =
         match instruction with X x' -> x < x' | Y y' -> y < y')
   in
   PM.fold paper' ~init ~f:(fun ~key:(x, y) ~data acc ->
-      if data = 0 then acc
-      else
-        let x', y' =
-          match instruction with
-          | X x' -> ((2 * x') - x, y)
-          | Y y' -> (x, (2 * y') - y)
-        in
-        PM.update acc (x', y') ~f:(function Some v -> v + data | None -> data))
+      let x', y' =
+        match instruction with
+        | X x' -> ((2 * x') - x, y)
+        | Y y' -> (x, (2 * y') - y)
+      in
+      PM.update acc (x', y') ~f:(function Some v -> v + data | None -> data))
 
 let paper_to_string p =
   let keys = PM.keys p in
