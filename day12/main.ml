@@ -35,11 +35,16 @@ module Cave = struct
 end
 
 module Path = struct
-  type t = Cave.t list [@@deriving show]
+  type t = Cave.t list
+
+  let show t =
+    List.map t ~f:(function Cave.Small s -> s | Cave.Large l -> l)
+    |> String.concat ~sep:"-"
 end
 
 module CaveSet = Set.Make (Cave)
 module CaveTable = Hashtbl.Make (Cave)
+module CaveMap = Map.Make (Cave)
 
 let create_adjacency_list links =
   let table = CaveTable.create () in
@@ -56,24 +61,62 @@ let create_adjacency_list links =
 let input = In_channel.input_lines In_channel.stdin |> List.map ~f:Cave.parse
 let adj_list = create_adjacency_list input
 
-let dfs m =
-  let find = CaveTable.find_exn m in
-  let rec aux node visited path complete =
-    if Cave.is_end node then List.rev (node :: path) :: complete
-    else
-      let adjacent = find node in
-      let next = CaveSet.diff adjacent visited in
-      if CaveSet.is_empty next then complete
+let part1 =
+  let dfs m =
+    let find = CaveTable.find_exn m in
+    let rec aux node visited path complete =
+      let visited =
+        if Cave.is_large node then visited else CaveSet.add visited node
+      in
+      if Cave.is_end node then List.rev (node :: path) :: complete
       else
-        let visited =
-          if Cave.is_large node then visited else CaveSet.add visited node
-        in
-        let path = node :: path in
-        let f acc node = aux node visited path acc in
-        CaveSet.fold next ~init:complete ~f
+        let adjacent = find node in
+        let next = CaveSet.diff adjacent visited in
+        if CaveSet.is_empty next then complete
+        else
+          let path = node :: path in
+          let f acc node = aux node visited path acc in
+          CaveSet.fold next ~init:complete ~f
+    in
+    aux Cave.start CaveSet.empty [] []
   in
-  aux Cave.start CaveSet.empty [] []
+  let paths = dfs adj_list in
+  List.length paths
 
-let paths = dfs adj_list
-let part1 = List.length paths
-let _ = Printf.printf "part1=%d;part2=" part1
+let part2 =
+  let dfs m =
+    let find = CaveTable.find_exn m in
+    let rec aux node visited path complete =
+      if Cave.is_end node then List.rev (node :: path) :: complete
+      else
+        let adjacent = find node in
+        let visited =
+          if Cave.is_large node then visited
+          else
+            CaveMap.update visited node ~f:(function
+              | Some v -> v + 1
+              | None -> 1)
+        in
+        let has_visited_twice =
+          CaveMap.exists visited ~f:(fun cnt -> cnt >= 2)
+        in
+        let next =
+          CaveSet.filter adjacent ~f:(function
+            | Small "start" -> false
+            | Small "end" -> true
+            | Large _ -> true
+            | node ->
+                if CaveMap.mem visited node then not has_visited_twice else true)
+        in
+        if CaveSet.is_empty next then complete
+        else
+          let path = node :: path in
+          let f acc node = aux node visited path acc in
+          CaveSet.fold next ~init:complete ~f
+    in
+    aux Cave.start CaveMap.empty [] []
+  in
+  let paths = dfs adj_list in
+  List.length paths
+
+let _ = Printf.printf "part1=%d;part2=%d" part1 part2
