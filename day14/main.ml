@@ -37,29 +37,22 @@ let rewrite { current; rules; start } =
       ~f:(fun ~key:(c0, c1) ~data acc ->
         match CharPairMap.find rules (c0, c1) with
         | Some c ->
-            let acc =
-              CharPairMap.update acc (c0, c) ~f:(function
-                | Some c -> c + data
-                | None -> data)
-            in
-            let acc =
-              CharPairMap.update acc (c, c1) ~f:(function
-                | Some c -> c + data
-                | None -> data)
-            in
+            let f = function Some c -> c + data | None -> data in
+            let acc = CharPairMap.update acc (c0, c) ~f in
+            let acc = CharPairMap.update acc (c, c1) ~f in
             acc
         | None -> acc)
   in
   { current = next; rules; start }
 
-let part1 =
+let solve n =
   let rec aux state i =
     if i <= 0 then state
     else
       let next = rewrite state in
       aux next (i - 1)
   in
-  let res = aux input 10 in
+  let res = aux input n in
   let counts =
     CharPairMap.fold res.current
       ~init:
@@ -69,12 +62,9 @@ let part1 =
              (String.get res.start (String.length res.start - 1), 1);
            ])
       ~f:(fun ~key:(c0, c1) ~data acc ->
-        let acc =
-          CM.update acc c0 ~f:(function Some c -> c + data | None -> data)
-        in
-        let acc =
-          CM.update acc c1 ~f:(function Some c -> c + data | None -> data)
-        in
+        let f = function Some c -> c + data | None -> data in
+        let acc = CM.update acc c0 ~f in
+        let acc = CM.update acc c1 ~f in
         acc)
   in
   let counts = CM.data counts in
@@ -82,34 +72,6 @@ let part1 =
   let min = List.min_elt counts ~compare:Int.compare |> Option.value_exn in
   (max - min) / 2
 
-let part2 =
-  let rec aux state i =
-    if i <= 0 then state
-    else
-      let next = rewrite state in
-      aux next (i - 1)
-  in
-  let res = aux input 40 in
-  let counts =
-    CharPairMap.fold res.current
-      ~init:
-        (CM.of_alist_exn
-           [
-             (String.get res.start 0, 1);
-             (String.get res.start (String.length res.start - 1), 1);
-           ])
-      ~f:(fun ~key:(c0, c1) ~data acc ->
-        let acc =
-          CM.update acc c0 ~f:(function Some c -> c + data | None -> data)
-        in
-        let acc =
-          CM.update acc c1 ~f:(function Some c -> c + data | None -> data)
-        in
-        acc)
-  in
-  let counts = CM.data counts in
-  let max = List.max_elt counts ~compare:Int.compare |> Option.value_exn in
-  let min = List.min_elt counts ~compare:Int.compare |> Option.value_exn in
-  (max - min) / 2
-
+let part1 = solve 10
+let part2 = solve 40
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
