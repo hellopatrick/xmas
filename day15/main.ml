@@ -42,10 +42,6 @@ let print graph n =
           Printf.printf "%d" (CT.find_exn graph (x, y)));
       Printf.printf "\n")
 
-let populate tbl graph data =
-  CT.iter_keys graph ~f:(fun key -> CT.set tbl ~key ~data);
-  tbl
-
 module PQ = Xmas.Priority_queue
 
 let neighbors graph (x, y) =
@@ -56,7 +52,6 @@ let neighbors graph (x, y) =
 let dijkstra graph source goal =
   let d = CT.create () in
   let p = CT.create () in
-  let d = populate d graph Int.max_value in
   CT.set d ~key:source ~data:0;
 
   let q = PQ.insert PQ.empty 0 source in
@@ -72,12 +67,14 @@ let dijkstra graph source goal =
             List.fold neighbors ~init:q ~f:(fun acc v ->
                 let dist = CT.find_exn d u in
                 let len = CT.find_exn graph v in
-                let curr = CT.find_exn d v in
+                let curr =
+                  CT.find_or_add d v ~default:(fun () -> Int.max_value)
+                in
                 let alt = dist + len in
                 if alt < curr then (
                   CT.set d ~key:v ~data:alt;
                   CT.set p ~key:v ~data:u;
-                  if PQ.contains acc v then acc else PQ.insert acc alt v)
+                  PQ.insert acc alt v)
                 else acc)
           in
           aux q
