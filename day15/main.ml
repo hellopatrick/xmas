@@ -83,9 +83,10 @@ let dijkstra graph source goal =
   aux q
 
 let solve target =
-  let tbl, _ = dijkstra graph (0, 0) (target, target) in
-  CT.find_exn tbl (target, target)
+  let n = target - 1 in
+  let tbl, _ = dijkstra graph (0, 0) (n, n) in
+  CT.find_exn tbl (n, n)
 
-let part1 = solve (List.length raw_input - 1)
-let part2 = solve ((5 * List.length raw_input) - 1)
+let part1 = solve (List.length raw_input)
+let part2 = solve (5 * List.length raw_input)
 let () = Printf.printf "part1=%d;part2=%d" part1 part2
