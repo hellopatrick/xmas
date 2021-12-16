@@ -10,33 +10,34 @@ let input =
          row |> String.to_list
          |> List.map ~f:(fun c -> Char.to_int c - 48)
          |> List.foldi ~init:m ~f:(fun j m v ->
-                CM.add_exn m ~key:(j, i) ~data:(Age v)))
+                CM.add_exn m ~key:(j, i) ~data:(Age v) ) )
 
 let age =
   let f = function Age 9 -> Flashing | Age v -> Age (v + 1) | _ -> Flashed in
   CM.map ~f
 
 let find_neighbors (x, y) =
-  [
-    (x - 1, y - 1);
-    (x - 1, y);
-    (x - 1, y + 1);
-    (x, y - 1);
-    (x, y + 1);
-    (x + 1, y - 1);
-    (x + 1, y);
-    (x + 1, y + 1);
-  ]
+  [ (x - 1, y - 1)
+  ; (x - 1, y)
+  ; (x - 1, y + 1)
+  ; (x, y - 1)
+  ; (x, y + 1)
+  ; (x + 1, y - 1)
+  ; (x + 1, y)
+  ; (x + 1, y + 1) ]
 
 let print m =
   let c = List.range 0 10 in
   List.iter c ~f:(fun y ->
       List.iter c ~f:(fun x ->
           match CM.find_exn m (x, y) with
-          | Age v -> Printf.printf "%d" v
-          | Flashing -> Printf.printf "*"
-          | Flashed -> Printf.printf ".");
-      Printf.printf "\n");
+          | Age v ->
+              Printf.printf "%d" v
+          | Flashing ->
+              Printf.printf "*"
+          | Flashed ->
+              Printf.printf "." ) ;
+      Printf.printf "\n" ) ;
   Printf.printf "\n"
 
 let handle m =
@@ -48,14 +49,18 @@ let handle m =
               let ns = find_neighbors key in
               let nearby_flashing =
                 List.count ns ~f:(fun n ->
-                    match CM.find m n with Some Flashing -> true | _ -> false)
+                    match CM.find m n with Some Flashing -> true | _ -> false )
               in
               Age (v + nearby_flashing)
-          | otherwise -> otherwise)
+          | otherwise ->
+              otherwise )
       |> CM.map ~f:(function
-           | Age v when v > 9 -> Flashing
-           | Flashing -> Flashed
-           | state -> state)
+           | Age v when v > 9 ->
+               Flashing
+           | Flashing ->
+               Flashed
+           | state ->
+               state )
     in
     let has_flashing = CM.exists m' ~f:(phys_equal Flashing) in
     if has_flashing then aux m' else m'
@@ -64,9 +69,12 @@ let handle m =
 
 let reset =
   CM.map ~f:(function
-    | Flashed -> Age 0
-    | Flashing -> failwith "cannot reset flashing"
-    | age -> age)
+    | Flashed ->
+        Age 0
+    | Flashing ->
+        failwith "cannot reset flashing"
+    | age ->
+        age )
 
 let part1 =
   let rec aux m r total =

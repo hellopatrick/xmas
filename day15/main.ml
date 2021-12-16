@@ -28,9 +28,9 @@ let graph =
                          ~key:(x + (dx * len), y + (dy * len))
                          ~data:
                            (let data = Char.to_int c - 48 + dx + dy in
-                            if data > 9 then (data % 10) + 1 else data)
-                         tbl))))
-      input;
+                            if data > 9 then (data % 10) + 1 else data )
+                         tbl ) ) ) )
+      input ;
     tbl
   in
   aux raw_input
@@ -39,26 +39,25 @@ let print graph n =
   let range = List.range 0 n in
   List.iter range ~f:(fun y ->
       List.iter range ~f:(fun x ->
-          Printf.printf "%d" (CT.find_exn graph (x, y)));
-      Printf.printf "\n")
+          Printf.printf "%d" (CT.find_exn graph (x, y)) ) ;
+      Printf.printf "\n" )
 
 module PQ = Xmas.Priority_queue
 
 let neighbors graph (x, y) =
-  let dirs = [ (0, 1); (0, -1); (1, 0); (-1, 0) ] in
+  let dirs = [(0, 1); (0, -1); (1, 0); (-1, 0)] in
   List.map dirs ~f:(fun (dx, dy) -> (dx + x, dy + y))
   |> List.filter ~f:(fun k -> CT.mem graph k)
 
 let dijkstra graph source goal =
   let d = CT.create () in
   let p = CT.create () in
-  CT.set d ~key:source ~data:0;
-
+  CT.set d ~key:source ~data:0 ;
   let q = PQ.insert PQ.empty 0 source in
-
   let rec aux q =
     match PQ.extract q with
-    | None -> (d, p)
+    | None ->
+        (d, p)
     | Some (_, u, q) ->
         if Coord.equal goal u then (d, p)
         else
@@ -72,14 +71,13 @@ let dijkstra graph source goal =
                 in
                 let alt = dist + len in
                 if alt < curr then (
-                  CT.set d ~key:v ~data:alt;
-                  CT.set p ~key:v ~data:u;
-                  PQ.insert acc alt v)
-                else acc)
+                  CT.set d ~key:v ~data:alt ;
+                  CT.set p ~key:v ~data:u ;
+                  PQ.insert acc alt v )
+                else acc )
           in
           aux q
   in
-
   aux q
 
 let solve target =
@@ -88,5 +86,7 @@ let solve target =
   CT.find_exn tbl (n, n)
 
 let part1 = solve (List.length raw_input)
+
 let part2 = solve (5 * List.length raw_input)
+
 let () = Printf.printf "part1=%d;part2=%d" part1 part2

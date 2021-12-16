@@ -3,11 +3,8 @@ module CM = Map.Make (Char)
 module CharPair = Tuple.Comparable (Char) (Char)
 module CharPairMap = CharPair.Map
 
-type prompt = {
-  start : string;
-  current : int CharPairMap.t;
-  rules : char CharPairMap.t;
-}
+type prompt =
+  {start: string; current: int CharPairMap.t; rules: char CharPairMap.t}
 
 let parse =
   let parse_rewrite line =
@@ -21,17 +18,21 @@ let parse =
         | c0 :: c1 :: tl ->
             aux (c1 :: tl)
               (CharPairMap.update counts (c0, c1) ~f:(function
-                | Some v -> v + 1
-                | None -> 1))
-        | _ -> counts
+                | Some v ->
+                    v + 1
+                | None ->
+                    1 ) )
+        | _ ->
+            counts
       in
       let current = aux (String.to_list start) CharPairMap.empty in
-      { start; current; rules }
-  | _ -> failwith "invalid input"
+      {start; current; rules}
+  | _ ->
+      failwith "invalid input"
 
 let input = In_channel.input_lines In_channel.stdin |> parse
 
-let rewrite { current; rules; start } =
+let rewrite {current; rules; start} =
   let next =
     CharPairMap.fold current ~init:CharPairMap.empty
       ~f:(fun ~key:(c0, c1) ~data acc ->
@@ -41,9 +42,10 @@ let rewrite { current; rules; start } =
             let acc = CharPairMap.update acc (c0, c) ~f in
             let acc = CharPairMap.update acc (c, c1) ~f in
             acc
-        | None -> acc)
+        | None ->
+            acc )
   in
-  { current = next; rules; start }
+  {current= next; rules; start}
 
 let solve n =
   let rec aux state i =
@@ -57,15 +59,13 @@ let solve n =
     CharPairMap.fold res.current
       ~init:
         (CM.of_alist_exn
-           [
-             (String.get res.start 0, 1);
-             (String.get res.start (String.length res.start - 1), 1);
-           ])
+           [ (String.get res.start 0, 1)
+           ; (String.get res.start (String.length res.start - 1), 1) ] )
       ~f:(fun ~key:(c0, c1) ~data acc ->
         let f = function Some c -> c + data | None -> data in
         let acc = CM.update acc c0 ~f in
         let acc = CM.update acc c1 ~f in
-        acc)
+        acc )
   in
   let counts = CM.data counts in
   let max = List.max_elt counts ~compare:Int.compare |> Option.value_exn in
@@ -73,5 +73,7 @@ let solve n =
   (max - min) / 2
 
 let part1 = solve 10
+
 let part2 = solve 40
+
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2

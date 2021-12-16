@@ -1,7 +1,9 @@
 open Core
 
 type score = int
+
 type board = int list list
+
 type step = Stop of score | Continue of board
 
 module IntPair = Tuple.Comparable (Int) (Int)
@@ -47,10 +49,13 @@ let play_board board numbers =
   let rec play' board numbers i =
     match numbers with
     | n :: tl -> (
-        match round board n with
-        | Stop score -> (i, score)
-        | Continue board -> play' board tl (i + 1))
-    | _ -> raise (Failure "never scored")
+      match round board n with
+      | Stop score ->
+          (i, score)
+      | Continue board ->
+          play' board tl (i + 1) )
+    | _ ->
+        raise (Failure "never scored")
   in
   play' board numbers 0
 

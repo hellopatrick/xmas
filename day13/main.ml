@@ -3,11 +3,14 @@ open Core
 type fold = X of int | Y of int
 
 let fold_to_string = function
-  | X x -> Printf.sprintf "x=%d" x
-  | Y y -> Printf.sprintf "y=%d" y
+  | X x ->
+      Printf.sprintf "x=%d" x
+  | Y y ->
+      Printf.sprintf "y=%d" y
 
 type coord = int * int
-type prompt = { coords : coord list; folds : fold list }
+
+type prompt = {coords: coord list; folds: fold list}
 
 let parse lines =
   let parse_line line coords folds =
@@ -15,7 +18,7 @@ let parse lines =
     else if String.is_prefix line ~prefix:"fold" then
       let fold =
         Scanf.sscanf line "fold along %c=%d" (fun axis coord ->
-            if Char.equal axis 'x' then X coord else Y coord)
+            if Char.equal axis 'x' then X coord else Y coord )
       in
       (coords, fold :: folds)
     else
@@ -27,32 +30,35 @@ let parse lines =
     | line :: tl ->
         let coords, folds = parse_line line coords folds in
         aux tl coords folds
-    | _ -> (coords, folds)
+    | _ ->
+        (coords, folds)
   in
   let coords, folds = aux lines [] [] in
-  { coords; folds = List.rev folds }
+  {coords; folds= List.rev folds}
 
 let input = In_channel.input_lines In_channel.stdin |> parse
 
 module Points = Tuple.Comparable (Int) (Int)
 module PM = Points.Map
 
-let paper { coords; _ } =
+let paper {coords; _} =
   let init = PM.empty in
   List.fold coords ~init ~f:(fun acc key -> PM.set acc ~key ~data:1)
 
 let fold paper instruction =
   let init, paper' =
     PM.partitioni_tf paper ~f:(fun ~key:(x, y) ~data:_ ->
-        match instruction with X x' -> x < x' | Y y' -> y < y')
+        match instruction with X x' -> x < x' | Y y' -> y < y' )
   in
   PM.fold paper' ~init ~f:(fun ~key:(x, y) ~data acc ->
       let x', y' =
         match instruction with
-        | X x' -> ((2 * x') - x, y)
-        | Y y' -> (x, (2 * y') - y)
+        | X x' ->
+            ((2 * x') - x, y)
+        | Y y' ->
+            (x, (2 * y') - y)
       in
-      PM.update acc (x', y') ~f:(function Some v -> v + data | None -> data))
+      PM.update acc (x', y') ~f:(function Some v -> v + data | None -> data) )
 
 let paper_to_string p =
   let keys = PM.keys p in
@@ -68,7 +74,7 @@ let paper_to_string p =
   let ys = List.range 0 (my + 1) in
   List.map ys ~f:(fun y ->
       List.map xs ~f:(fun x -> if PM.mem p (x, y) then "#" else ".")
-      |> String.concat)
+      |> String.concat )
   |> String.concat ~sep:"\n"
 
 let init = paper input
@@ -80,5 +86,7 @@ let part1 =
   PM.length p
 
 let part2 = List.fold input.folds ~init ~f:fold
+
 let _ = Printf.printf "part1=%d\n\n" part1
+
 let _ = Printf.printf "%s" (paper_to_string part2)

@@ -9,13 +9,16 @@ let input =
 
 let process fishes =
   match fishes with
-  | [ zero; one; two; three; four; five; six; seven; eight ] ->
-      [ one; two; three; four; five; six; seven + zero; eight; zero ]
-  | _ -> raise Xmas.Exc.Unreachable
+  | [zero; one; two; three; four; five; six; seven; eight] ->
+      [one; two; three; four; five; six; seven + zero; eight; zero]
+  | _ ->
+      raise Xmas.Exc.Unreachable
 
 let rec spawn fishes n =
   if n > 0 then spawn (process fishes) (n - 1) else fishes
 
 let part1 = spawn input 80 |> Xmas.Enum.sum
+
 let part2 = spawn input 256 |> Xmas.Enum.sum
+
 let _ = Printf.printf "part1=%d; part2=%d" part1 part2

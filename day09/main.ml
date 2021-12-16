@@ -6,9 +6,9 @@ let input =
   |> List.foldi ~init:Coords.Map.empty ~f:(fun y m row ->
          String.foldi ~init:m
            ~f:(fun x m c -> Map.set ~key:(x, y) ~data:(Char.to_int c - 48) m)
-           row)
+           row )
 
-let neighbors (x, y) = [ (x, y + 1); (x, y - 1); (x - 1, y); (x + 1, y) ]
+let neighbors (x, y) = [(x, y + 1); (x, y - 1); (x - 1, y); (x + 1, y)]
 
 let is_low_point map pt =
   let v = Map.find_exn map pt in
@@ -27,7 +27,8 @@ let part1 =
 let basin_size map start =
   let rec aux filled pt =
     match Coords.Map.find map pt with
-    | Some 9 | None -> filled
+    | Some 9 | None ->
+        filled
     | Some _ ->
         if Coords.Set.mem filled pt then filled
         else List.fold ~init:(Coords.Set.add filled pt) ~f:aux (neighbors pt)
@@ -39,7 +40,9 @@ let part2 =
   let basin_sizes = List.map low_points ~f:(basin_size input) in
   let sizes = List.sort basin_sizes ~compare:Int.compare |> List.rev in
   match sizes with
-  | a :: b :: c :: _ -> a * b * c
-  | _ -> raise Xmas.Exc.Unreachable
+  | a :: b :: c :: _ ->
+      a * b * c
+  | _ ->
+      raise Xmas.Exc.Unreachable
 
 let () = Printf.printf "part1=%d; part2=%d" part1 part2
