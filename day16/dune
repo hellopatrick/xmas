@@ -1,4 +1,6 @@
 (executable
  (public_name day16)
  (name main)
+ (preprocess
+  (pps ppx_deriving.show))
  (libraries xmas core))
