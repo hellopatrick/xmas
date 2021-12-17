@@ -32,9 +32,9 @@ let max_y area {x= vx; y= vy} =
 
 let possible_initial_velocities area =
   let min_vx = 1 in
-  let max_vx = area.bottom_right.x + 1 in
-  let min_vy = area.bottom_right.y - 1 in
-  let max_vy = Int.neg (area.bottom_right.y - 1) in
+  let max_vx = area.bottom_right.x in
+  let min_vy = area.bottom_right.y in
+  let max_vy = Int.neg area.bottom_right.y in
   let x_range =
     Sequence.range ~start:`inclusive ~stop:`inclusive min_vx max_vx
   in
