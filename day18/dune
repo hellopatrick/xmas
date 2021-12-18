@@ -1,0 +1,6 @@
+(executable
+ (public_name day18)
+ (name main)
+ (preprocess
+  (pps ppx_deriving.show))
+ (libraries xmas core yojson))
