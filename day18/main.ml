@@ -49,7 +49,7 @@ let explode a =
         | None ->
             None ) )
   in
-  helper a 0 |> Option.map ~f:(fun (s, _, _) -> s)
+  helper a 0 |> Option.map ~f:Tuple3.get1
 
 let rec split a =
   match a with
@@ -85,10 +85,10 @@ let part1 =
   List.reduce input ~f:add |> Option.map ~f:magnitude |> Option.value_exn
 
 let part2 =
-  List.cartesian_product input input
-  |> List.map ~f:(fun (a, b) -> add a b)
-  |> List.map ~f:magnitude
-  |> List.max_elt ~compare:Int.compare
+  Sequence.cartesian_product (Sequence.of_list input) (Sequence.of_list input)
+  |> Sequence.map ~f:(fun (a, b) -> add a b)
+  |> Sequence.map ~f:magnitude
+  |> Sequence.max_elt ~compare:Int.compare
   |> Option.value_exn
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
