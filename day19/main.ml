@@ -59,7 +59,7 @@ let rotations =
 
 module IntSet = Set.Make (Int)
 
-let find_offset known unknown =
+let find_offset' known unknown =
   CS.find_map unknown ~f:(fun pt ->
       let possible_offsets = CS.map known ~f:(fun a -> T3.diff a pt) in
       CS.find_map possible_offsets ~f:(fun offset ->
@@ -70,9 +70,20 @@ let find_offset known unknown =
           let len = CS.length common in
           if len >= 12 then Some (offset, transformed_unknown) else None ) )
 
+let find_offset known unknown =
+  CS.find_map unknown ~f:(fun pt ->
+      let seq = Set.to_sequence known in
+      let possible_offsets = Sequence.map seq ~f:(fun a -> T3.diff a pt) in
+      Sequence.find_map possible_offsets ~f:(fun offset ->
+          let transformed_unknown =
+            CS.map unknown ~f:(fun pt -> T3.add pt offset)
+          in
+          let common = CS.inter transformed_unknown known in
+          let len = CS.length common in
+          if len >= 12 then Some (offset, transformed_unknown) else None ) )
+
 let fit known_beacons unknown_scan =
-  List.find_map rotations ~f:(fun rot ->
-      let transformed = CS.map unknown_scan ~f:rot in
+  List.find_map unknown_scan ~f:(fun transformed ->
       find_offset known_beacons transformed )
 
 let find_next_alignment known_beacons unknown_scans =
@@ -90,6 +101,10 @@ let find_next_alignment known_beacons unknown_scans =
   aux unknown_scans []
 
 let rec solve offsets known_beacons unknown_scans =
+  (* Printf.printf "offsets=%d known_beacons=%d unknown_scans=%d\n"
+       (List.length offsets) (CS.length known_beacons)
+       (List.length unknown_scans) ;
+     Out_channel.(flush stdout) ; *)
   match unknown_scans with
   | [] ->
       (offsets, known_beacons)
@@ -102,8 +117,13 @@ let rec solve offsets known_beacons unknown_scans =
 let process = function
   | [] ->
       failwith "must have at least one reading"
-  | hd :: tl ->
-      solve [(0, 0, 0)] hd tl
+  | known :: rest ->
+      solve
+        [(0, 0, 0)]
+        known
+        (* pre-compute the possible rotations *)
+        (List.map rest ~f:(fun reading ->
+             List.map rotations ~f:(fun rot -> CS.map reading ~f:rot) ) )
 
 let input = Stdio.(In_channel.input_lines stdin) |> parse
 
