@@ -4,6 +4,7 @@ module T2 = Tuple.Comparable (Int) (Int)
 module Image = struct
   include T2.Map
 
+  (* simple image format: https://en.wikipedia.org/wiki/Netpbm#PPM_example *)
   let to_ppm t file =
     let file = Out_channel.create file in
     let (x0, y0), _ = min_elt_exn t in
@@ -12,11 +13,11 @@ module Image = struct
     let ys = List.range ~start:`inclusive ~stop:`inclusive y0 y1 in
     let width = x1 - x0 in
     let height = y1 - y0 in
-    Printf.fprintf file "P3\n%d %d\n255\n" width height ;
+    Printf.fprintf file "P1\n%d %d\n" width height ;
     List.iter ys ~f:(fun y ->
         List.iter xs ~f:(fun x ->
             let px = find_exn t (x, y) in
-            let px = if px then "255 255 255" else "0 0 0" in
+            let px = if px then "1" else "0" in
             Printf.fprintf file "%s " px ) ;
         Printf.fprintf file "\n" )
 end
@@ -110,7 +111,7 @@ let part1 =
 
 let part2 =
   let {image; _} = run t 50 in
-  (* Image.to_ppm image "test.ppm" ; *)
+  Image.to_ppm image "test.ppm" ;
   Image.count image ~f:(fun v -> v)
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
