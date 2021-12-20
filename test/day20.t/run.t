@@ -4,4 +4,4 @@ https://adventofcode.com/2021/day/20
   part1=35;part2=3351
 
   $ day20 < input
-  part1=;part2=
+  part1=5301;part2=19492
