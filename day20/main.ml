@@ -111,7 +111,7 @@ let part1 =
 
 let part2 =
   let {image; _} = run t 50 in
-  Image.to_ppm image "test.ppm" ;
+  (* Image.to_ppm image "test.ppm" ; *)
   Image.count image ~f:(fun v -> v)
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
