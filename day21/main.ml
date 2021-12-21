@@ -4,12 +4,9 @@ module Die = struct
   type t = int Sequence.t
 
   let loaded =
-    let seq =
-      Sequence.unfold ~init:1 ~f:(fun acc ->
-          let acc = if acc > 100 then 1 else acc in
-          Some (acc, acc + 1) )
-    in
-    Sequence.chunks_exn seq 3 |> Sequence.map ~f:Xmas.Enum.sum
+    Sequence.unfold ~init:1 ~f:(fun acc ->
+        let acc = if acc > 100 then 1 else acc in
+        Some (acc, acc + 1) )
 
   let dirac =
     let possible_die =
@@ -40,6 +37,7 @@ module Die = struct
       ; (3, 3, 1)
       ; (3, 3, 2)
       ; (3, 3, 3) ]
+      |> List.map ~f:(fun (x, y, z) -> x + y + z)
     in
     Sequence.of_list possible_die
 end
@@ -97,18 +95,16 @@ let parse lines =
 
 let p1, p2 = In_channel.(input_lines stdin) |> parse
 
-(* Printf.printf "[ " ;
-      Sequence.iter rolls ~f:(Printf.printf "%d ") ;
-      Printf.printf "]\n" ; *)
 let run scr brd die goal =
   let rec aux scr brd die rnd =
-    if Score.has_winner scr goal then (scr, rnd)
+    if Score.has_winner scr goal then (scr, rnd * 3)
     else
       let player = (rnd % 2) + 1 in
-      let steps = Sequence.hd_exn die in
+      let rolls, die = Sequence.split_n die 3 in
+      let steps = Xmas.Enum.sum rolls in
       let n, brd = Board.move brd player steps in
       let scr = Score.inc scr player n in
-      aux scr brd (Sequence.drop_eagerly die 1) (rnd + 1)
+      aux scr brd die (rnd + 1)
   in
   aux scr brd die 0
 
@@ -116,8 +112,8 @@ let part1 =
   let scr = Score.empty in
   let brd = Board.init p1 p2 10 in
   let die = Die.loaded in
-  let res, rnd = run scr brd die 1000 in
-  3 * rnd * Score.loser res
+  let res, rolls = run scr brd die 1000 in
+  rolls * Score.loser res
 
 module State = struct
   type t = Score.t * Board.t * bool [@@deriving hash, sexp, ord, eq]
@@ -133,8 +129,7 @@ let simulate scr brd die goal =
         else if scr.p2 >= goal then (0, 1)
         else
           let player = if is_p1 then 1 else 2 in
-          Sequence.fold die ~init:(0, 0) ~f:(fun (p1, p2) (r1, r2, r3) ->
-              let steps = r1 + r2 + r3 in
+          Sequence.fold die ~init:(0, 0) ~f:(fun (p1, p2) steps ->
               let n, brd = Board.move brd player steps in
               let scr = Score.inc scr player n in
               let w1, w2 = aux scr brd (not is_p1) in
