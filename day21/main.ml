@@ -60,8 +60,6 @@ module Board = struct
         (next, {t with p2= next})
     | _ ->
         failwith "invalid player"
-
-  include Hashable
 end
 
 module Score = struct
