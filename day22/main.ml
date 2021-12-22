@@ -69,6 +69,7 @@ let solve cubes =
   in
   aux cubes 0
 
+(* original part1 was brute forced (see past commits.) *)
 let part1 =
   let bounds =
     Cuboid.{xmin= -50; xmax= 50; ymin= -50; ymax= 50; zmin= -50; zmax= 50}
