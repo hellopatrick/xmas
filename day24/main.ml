@@ -89,4 +89,4 @@ let constraints =
 
 let _ =
   let min, max = IM.find_exn constraints 0 in
-  Printf.printf "min=%d max=%d" min max
+  Printf.printf "part1=%d;part2=%d" max min
