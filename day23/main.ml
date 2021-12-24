@@ -213,22 +213,17 @@ let solve initial_state =
         if current_cost >= best_known_cost || current_cost > seen then
           aux queue best_known_cost
         else if State.is_final state then
-          let () =
-            Out_channel.(
-              printf "%s=>%d [final]\n" (State.show state) current_cost ;
-              flush stdout)
-          in
+          (* let () =
+               Out_channel.(
+                 printf "%s=>%d [final]\n" (State.show state) current_cost ;
+                 flush stdout)
+             in *)
           aux queue (Int.min current_cost best_known_cost)
         else
           match possible_next_states state with
           | [] ->
               aux queue best_known_cost
           | ns ->
-              let () =
-                Out_channel.(
-                  printf "%s=>%d\n" (State.show state) current_cost ;
-                  flush stdout)
-              in
               let ns =
                 List.map ns ~f:(fun (cost, state) ->
                     let total_cost = current_cost + cost in
