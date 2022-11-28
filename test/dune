@@ -1,0 +1,4 @@
+
+(cram
+ (applies_to day1)
+ (deps %{bin:day1}))
