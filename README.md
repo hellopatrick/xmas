@@ -2,6 +2,16 @@
 
 Yet another Advent of Code repo. Yearly relapse into OCaml.
 
+## Verification
+
+```bash
+# Run all days.
+> dune runtest
+
+# Run an individual day.
+> dune build @test/day1
+```
+
 ## Editions
 
 - [2022](https://github.com/hellopatrick/xmas/tree/v2022)
