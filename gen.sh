@@ -30,7 +30,7 @@ touch test/"$day".t/test
 touch test/"$day".t/input
 
 cat > test/"$day".t/run.t <<EOF
-https://adventofcode.com/2021/day/$num
+https://adventofcode.com/2022/day/$num
 
   $ $day < test
   part1=;part2=
