@@ -2,3 +2,6 @@
  (public_name day01)
  (name main)
  (libraries xmas core))
+
+(cram
+ (deps %{bin:day01}))

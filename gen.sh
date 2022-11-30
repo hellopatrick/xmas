@@ -12,6 +12,9 @@ cat > "$day"/dune <<EOF
  (public_name $day)
  (name main)
  (libraries xmas core))
+
+(cram
+ (deps %{bin:$day}))
 EOF
 
 cat > "$day"/main.ml <<EOF
@@ -24,12 +27,12 @@ EOF
 
 # test files
 
-mkdir -p test/"$day".t
+mkdir -p "$day"/test.t
 
-touch test/"$day".t/test
-touch test/"$day".t/input
+touch "$day"/test.t/test
+touch "$day"/test.t/input
 
-cat > test/"$day".t/run.t <<EOF
+cat > "$day"/test.t/run.t <<EOF
 https://adventofcode.com/2022/day/$num
 
   $ $day < test
@@ -37,13 +40,6 @@ https://adventofcode.com/2022/day/$num
 
   $ $day < input
   part1=;part2=
-EOF
-
-cat >> test/dune <<EOF
-
-(cram
- (applies_to $day)
- (deps %{bin:$day}))
 EOF
 
 dune build
