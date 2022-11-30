@@ -9,7 +9,7 @@ Yet another Advent of Code repo. Yearly relapse into OCaml.
 > dune runtest
 
 # Run an individual day.
-> dune build @test/day1
+> dune build @day01/test
 ```
 
 ## Editions
