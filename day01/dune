@@ -1,4 +1,4 @@
 (executable
- (public_name day1)
+ (public_name day01)
  (name main)
  (libraries xmas core))

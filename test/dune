@@ -1,4 +1,4 @@
 
 (cram
- (applies_to day1)
- (deps %{bin:day1}))
+ (applies_to day01)
+ (deps %{bin:day01}))
