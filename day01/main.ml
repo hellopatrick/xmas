@@ -1,25 +1,23 @@
 open Core
+open Xmas.Option
 
 let input = In_channel.(input_lines stdin)
 
 let parse_elves l =
-  let lines =
-    List.map l ~f:(fun l -> int_of_string_opt l |> Option.value ~default:0)
-  in
-  List.group lines ~break:(fun _ b -> b = 0)
+  List.map l ~f:(fun l -> int_of_string_opt l |? lazy 0)
+  |> List.group ~break:(fun a _ -> a = 0)
 
 let part1 l =
-  let elves = parse_elves l in
-  let carrying = List.map elves ~f:Xmas.Enum.sum in
-  List.max_elt carrying ~compare:Int.compare |> Option.value ~default:0
+  parse_elves l |> List.map ~f:Xmas.Enum.sum
+  |> List.max_elt ~compare:Int.compare
+  |? lazy 0
 
 let part2 l =
-  let elves = parse_elves l in
-  let carrying = List.map elves ~f:Xmas.Enum.sum in
-  let carrying_sorted =
-    List.sort carrying ~compare:(fun a b -> Int.neg (Int.compare a b))
+  let elves =
+    parse_elves l |> List.map ~f:Xmas.Enum.sum
+    |> List.sort ~compare:Int.compare
+    |> List.rev
   in
-  let top_three = List.take carrying_sorted 3 in
-  Xmas.Enum.sum top_three
+  List.take elves 3 |> Xmas.Enum.sum
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
