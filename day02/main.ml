@@ -12,31 +12,43 @@ module Move = struct
         Paper
     | "C" | "Z" ->
         Scissors
-    | _ ->
-        exit 0
+    | c ->
+        Xmas.Exc.unreachable (Printf.sprintf "Invalid move: %s" c)
 
-  let score = function Rock -> 1 | Paper -> 2 | Scissors -> 3
+  let value = function Rock -> 1 | Paper -> 2 | Scissors -> 3
 
   let next = function Rock -> Paper | Paper -> Scissors | Scissors -> Rock
 
   let prev = function Rock -> Scissors | Scissors -> Paper | Paper -> Rock
+
+  let compare a b =
+    match (a, b) with
+    | Rock, Paper | Paper, Scissors | Scissors, Rock ->
+        -1
+    | Paper, Rock | Scissors, Paper | Rock, Scissors ->
+        1
+    | _ ->
+        0
 end
 
-let points = function
-  | [Move.Rock; Move.Paper]
-  | [Move.Paper; Move.Scissors]
-  | [Move.Scissors; Move.Rock] ->
-      6
-  | [Move.Rock; Move.Scissors]
-  | [Move.Scissors; Move.Paper]
-  | [Move.Paper; Move.Rock] ->
-      0
-  | _ ->
-      3
+module Round = struct
+  type t = {me: Move.t; them: Move.t}
+
+  let points {me; them} =
+    let res =
+      match Move.compare me them with -1 -> 0 | 0 -> 3 | 1 -> 6 | _ -> 0
+    in
+    res + Move.value me
+end
 
 let parse input =
   List.map ~f:(fun l -> String.split l ~on:' ') input
-  |> List.map ~f:(fun r -> List.map r ~f:Move.of_string)
+  |> List.map ~f:(fun r ->
+         match r with
+         | [them; me] ->
+             Round.{me= Move.of_string me; them= Move.of_string them}
+         | _ ->
+             Xmas.Exc.unreachable "invalid line" )
 
 let parse' input =
   List.map ~f:(fun l -> String.split l ~on:' ') input
@@ -45,26 +57,18 @@ let parse' input =
            let them = Move.of_string them in
            match res with
            | "X" ->
-               [them; Move.prev them]
+               Round.{them; me= Move.prev them}
            | "Y" ->
-               [them; them]
+               Round.{them; me= them}
            | "Z" ->
-               [them; Move.next them]
+               Round.{them; me= Move.next them}
            | _ ->
-               exit 0 )
+               Xmas.Exc.unreachable "invalid round ending" )
        | _ ->
-           exit 0 )
+           Xmas.Exc.unreachable "invalid line" )
 
-let part1 input =
-  let rounds = parse input in
-  let results = List.map ~f:points rounds in
-  let self = List.map ~f:(function [_; m] -> Move.score m | _ -> 0) rounds in
-  Xmas.Enum.sum self + Xmas.Enum.sum results
+let part1 input = input |> parse |> List.map ~f:Round.points |> Xmas.Enum.sum
 
-let part2 input =
-  let rounds = parse' input in
-  let results = List.map ~f:points rounds in
-  let self = List.map ~f:(function [_; m] -> Move.score m | _ -> 0) rounds in
-  Xmas.Enum.sum self + Xmas.Enum.sum results
+let part2 input = input |> parse' |> List.map ~f:Round.points |> Xmas.Enum.sum
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
