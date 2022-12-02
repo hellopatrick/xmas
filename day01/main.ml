@@ -10,10 +10,8 @@ let sorted_elves_capacity l =
   |> List.sort ~compare:Int.compare
   |> List.rev
 
-let elves = sorted_elves_capacity input
-
-let part1 = List.hd_exn elves
-
-let part2 = List.take elves 3 |> Xmas.Enum.sum
-
-let _ = Printf.printf "part1=%d;part2=%d" part1 part2
+let _ =
+  let elves = sorted_elves_capacity input in
+  let part1 = List.hd_exn elves in
+  let part2 = List.take elves 3 |> Xmas.Enum.sum in
+  Printf.printf "part1=%d;part2=%d" part1 part2
