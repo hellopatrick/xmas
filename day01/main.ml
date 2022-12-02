@@ -4,11 +4,12 @@ open Xmas.Option
 let input = In_channel.(input_lines stdin)
 
 let sorted_elves_capacity l =
-  List.map l ~f:(fun l -> int_of_string_opt l |? lazy 0)
-  |> List.group ~break:(fun a _ -> a = 0)
-  |> List.map ~f:Xmas.Enum.sum
-  |> List.sort ~compare:Int.compare
-  |> List.rev
+  let f (elf, elves) r =
+    let open Core.Option in
+    int_of_string_opt r >>| (fun i -> (i + elf, elves)) |? lazy (0, elf :: elves)
+  in
+  let last, elves = List.fold l ~init:(0, []) ~f in
+  last :: elves |> List.sort ~compare |> List.rev
 
 let _ =
   let elves = sorted_elves_capacity input in
