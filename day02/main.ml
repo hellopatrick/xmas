@@ -5,15 +5,15 @@ let input = In_channel.(input_lines stdin)
 module Move = struct
   type t = Rock | Paper | Scissors
 
-  let of_string = function
-    | "A" | "X" ->
+  let of_char = function
+    | 'A' | 'X' ->
         Rock
-    | "B" | "Y" ->
+    | 'B' | 'Y' ->
         Paper
-    | "C" | "Z" ->
+    | 'C' | 'Z' ->
         Scissors
     | c ->
-        Xmas.Exc.unreachable (Printf.sprintf "Invalid move: %s" c)
+        Xmas.Exc.unreachable (Printf.sprintf "Invalid move: %c" c)
 
   let value = function Rock -> 1 | Paper -> 2 | Scissors -> 3
 
@@ -42,33 +42,29 @@ module Round = struct
 end
 
 let parse input =
-  List.map ~f:(fun l -> String.split l ~on:' ') input
-  |> List.map ~f:(fun r ->
-         match r with
-         | [them; me] ->
-             Round.{me= Move.of_string me; them= Move.of_string them}
-         | _ ->
-             Xmas.Exc.unreachable "invalid line" )
+  List.map
+    ~f:(fun l -> Round.{me= Move.of_char l.[2]; them= Move.of_char l.[0]})
+    input
 
 let parse' input =
-  List.map ~f:(fun l -> String.split l ~on:' ') input
-  |> List.map ~f:(function
-       | [them; res] -> (
-           let them = Move.of_string them in
-           match res with
-           | "X" ->
-               Round.{them; me= Move.prev them}
-           | "Y" ->
-               Round.{them; me= them}
-           | "Z" ->
-               Round.{them; me= Move.next them}
-           | _ ->
-               Xmas.Exc.unreachable "invalid round ending" )
-       | _ ->
-           Xmas.Exc.unreachable "invalid line" )
+  List.map
+    ~f:(fun l ->
+      let them = Move.of_char l.[0] in
+      match l.[2] with
+      | 'X' ->
+          Round.{them; me= Move.prev them}
+      | 'Y' ->
+          Round.{them; me= them}
+      | 'Z' ->
+          Round.{them; me= Move.next them}
+      | _ ->
+          Xmas.Exc.unreachable "invalid round ending" )
+    input
 
-let part1 input = input |> parse |> List.map ~f:Round.points |> Xmas.Enum.sum
+let part1 input =
+  input |> parse |> List.fold ~init:0 ~f:(fun acc r -> acc + Round.points r)
 
-let part2 input = input |> parse' |> List.map ~f:Round.points |> Xmas.Enum.sum
+let part2 input =
+  input |> parse' |> List.fold ~init:0 ~f:(fun acc r -> acc + Round.points r)
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
