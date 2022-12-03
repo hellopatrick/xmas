@@ -1,4 +1,5 @@
 open Core
+open Xmas.Fn
 
 let input = In_channel.(input_lines stdin)
 
@@ -10,8 +11,6 @@ let priority c =
       -38 + Char.to_int c
   | _ ->
       assert false
-
-let ( % ) = Fn.compose
 
 let char_set_of_string = Char.Set.of_list % String.to_list_rev
 
