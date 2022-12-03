@@ -10,7 +10,7 @@ let priority c =
   | 'A' .. 'Z' ->
       -38 + Char.to_int c
   | _ ->
-      assert false
+      failwith "unsupported char"
 
 let char_set_of_string = Char.Set.of_list % String.to_list_rev
 

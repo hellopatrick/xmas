@@ -12,8 +12,8 @@ module Move = struct
         Paper
     | 'C' | 'Z' ->
         Scissors
-    | c ->
-        Xmas.Exc.unreachable (Printf.sprintf "Invalid move: %c" c)
+    | _ ->
+        failwith "Invalid move"
 
   let value = function Rock -> 1 | Paper -> 2 | Scissors -> 3
 
@@ -58,7 +58,7 @@ let parse' input =
       | 'Z' ->
           Round.{them; me= Move.next them}
       | _ ->
-          Xmas.Exc.unreachable "invalid round ending" )
+          failwith "invalid round ending" )
     input
 
 let part1 input =
