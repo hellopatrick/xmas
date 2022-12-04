@@ -5,7 +5,7 @@ let input = In_channel.(input_lines stdin)
 module CharSet = struct
   include Char.Set
 
-  let of_string = Fn.compose of_list String.to_list_rev
+  let of_string = Fn.compose of_list String.to_list
 end
 
 let priority c =
