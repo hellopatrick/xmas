@@ -1,0 +1,7 @@
+(executable
+ (public_name day04)
+ (name main)
+ (libraries xmas core))
+
+(cram
+ (deps %{bin:day04}))
