@@ -5,7 +5,7 @@ let input = In_channel.(input_lines stdin)
 module Range = struct
   type t = {first: int; last: int}
 
-  let scan b = Scanf.bscanf b "%d-%d" (fun first last -> {first; last})
+  let parse b = Scanf.bscanf b "%d-%d" (fun first last -> {first; last})
 
   let includes t s = t.first <= s.first && t.last >= s.last
 
@@ -13,7 +13,7 @@ module Range = struct
 end
 
 let parse line =
-  Scanf.sscanf line "%r,%r" Range.scan Range.scan (fun r1 r2 -> (r1, r2))
+  Scanf.sscanf line "%r,%r" Range.parse Range.parse (fun r1 r2 -> (r1, r2))
 
 let part1 input =
   input |> List.map ~f:parse
