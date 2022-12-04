@@ -3,16 +3,17 @@ open Core
 let input = In_channel.(input_lines stdin)
 
 module Range = struct
-  type t = {s: int; e: int}
+  type t = {first: int; last: int}
 
-  let includes t s = t.s <= s.s && t.e >= s.e
+  let scan b = Scanf.bscanf b "%d-%d" (fun first last -> {first; last})
 
-  let overlap t s = t.s <= s.e && t.e >= s.s
+  let includes t s = t.first <= s.first && t.last >= s.last
+
+  let overlap t s = t.first <= s.last && t.last >= s.first
 end
 
 let parse line =
-  Scanf.sscanf line "%d-%d,%d-%d" (fun s1 e1 s2 e2 ->
-      (Range.{s= s1; e= e1}, Range.{s= s2; e= e2}) )
+  Scanf.sscanf line "%r,%r" Range.scan Range.scan (fun r1 r2 -> (r1, r2))
 
 let part1 input =
   input |> List.map ~f:parse
