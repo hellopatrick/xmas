@@ -12,7 +12,7 @@ end
 
 let parse lines =
   let stacks, moves =
-    List.split_while lines ~f:(fun s -> not (String.equal s "--"))
+    List.split_while lines ~f:(fun s -> not (String.is_empty s))
   in
   let stacks = List.map stacks ~f:String.to_list in
   let moves = List.tl_exn moves in
