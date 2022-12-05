@@ -29,8 +29,8 @@ let solve_inplace f stack moves =
         let s = stack.(src) in
         let d = stack.(dst) in
         let top, bot = List.split_n s amt in
-        Array.set stack src top ;
-        Array.set stack dst (List.concat [f bot; d]) ;
+        Array.set stack src bot ;
+        Array.set stack dst (List.concat [f top; d]) ;
         aux tl
   in
   let _ = aux moves in
