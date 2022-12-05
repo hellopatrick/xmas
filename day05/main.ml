@@ -28,9 +28,9 @@ let solve_inplace f stack moves =
         let Move.{src; dst; amt} = mv in
         let s = stack.(src) in
         let d = stack.(dst) in
-        let s' = List.take s amt in
-        Array.set stack src (List.drop s amt) ;
-        Array.set stack dst (List.concat [f s'; d]) ;
+        let top, bot = List.split_n s amt in
+        Array.set stack src top ;
+        Array.set stack dst (List.concat [f bot; d]) ;
         aux tl
   in
   let _ = aux moves in
