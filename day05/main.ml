@@ -19,7 +19,7 @@ let parse lines =
   let moves = List.map moves ~f:Move.parse in
   (Array.of_list stacks, moves)
 
-let solve f stack moves =
+let solve_inplace f stack moves =
   let rec aux moves =
     match moves with
     | [] ->
@@ -38,10 +38,10 @@ let solve f stack moves =
 
 let part1 input =
   let stack, moves = parse input in
-  solve List.rev stack moves
+  solve_inplace List.rev stack moves
 
 let part2 input =
   let stack, moves = parse input in
-  solve Fn.id stack moves
+  solve_inplace Fn.id stack moves
 
 let _ = Printf.printf "part1=%s;part2=%s" (part1 input) (part2 input)
