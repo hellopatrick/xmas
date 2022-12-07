@@ -2,14 +2,6 @@ open Core
 
 let input = In_channel.(input_lines stdin)
 
-module File = struct
-  type t = {name: string; size: int}
-end
-
-module Dir = struct
-  type t = {name: string; parent: t option; children: t list; files: File.t list}
-end
-
 let parse lines =
   let hm = Hashtbl.create (module String) in
   let rec aux lines path =
