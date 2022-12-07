@@ -62,8 +62,9 @@ let part2 disk =
   let used_space = Hashtbl.find_exn disk "/" in
   let free_space = max_space - used_space in
   let needed_space = required_space - free_space in
-  disk |> Hashtbl.data
-  |> List.filter ~f:(fun d -> d >= needed_space)
-  |> List.min_elt ~compare |> Option.value_exn
+  Hashtbl.fold ~init:Int.max_value
+    ~f:(fun ~key:_ ~data acc ->
+      if data >= needed_space && data < acc then data else acc )
+    disk
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 disk) (part2 disk)
