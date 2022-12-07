@@ -26,8 +26,7 @@ let parse lines =
         let _ =
           List.fold_right path
             ~f:(fun comp acc ->
-              let acc = comp :: acc in
-              let key = String.concat ~sep:"/" acc in
+              let key = acc ^ comp in
               let _ =
                 Hashtbl.update hm key ~f:(function
                   | None ->
@@ -35,8 +34,8 @@ let parse lines =
                   | Some v ->
                       v + data )
               in
-              acc )
-            ~init:[]
+              key )
+            ~init:""
         in
         aux tl path
   in
