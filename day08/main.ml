@@ -58,8 +58,11 @@ let parse lines =
 let part1 m = m |> Map.filter (fun c _ -> Map.is_visible c m) |> Map.cardinal
 
 let part2 m =
-  let scores = m |> Map.mapi (fun c _ -> Map.score c m) in
-  Map.fold (fun _ v max -> if v > max then v else max) scores 0
+  Map.fold
+    (fun c _ max ->
+      let score = Map.score c m in
+      if score > max then score else max )
+    m 0
 
 let map = parse input
 
