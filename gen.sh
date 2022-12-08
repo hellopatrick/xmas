@@ -11,16 +11,16 @@ cat > "$day"/dune <<EOF
 (executable
  (public_name $day)
  (name main)
- (libraries xmas core))
+ (libraries xmas containers))
 
 (cram
  (deps %{bin:$day}))
 EOF
 
 cat > "$day"/main.ml <<EOF
-open Core
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.read_lines_l stdin
 
 let _ = Printf.printf "part1=;part2="
 EOF
