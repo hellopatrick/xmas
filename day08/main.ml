@@ -55,7 +55,8 @@ let parse lines =
         acc chars )
     Map.empty lines
 
-let part1 m = m |> Map.filter (fun c _ -> Map.is_visible c m) |> Map.cardinal
+let part1 m =
+  Map.fold (fun c _ acc -> if Map.is_visible c m then acc + 1 else acc) m 0
 
 let part2 m =
   Map.fold
