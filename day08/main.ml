@@ -2,26 +2,29 @@ open Containers
 
 let input = IO.read_lines_l stdin
 
-module Coordinate = struct
+module C = struct
   type t = int * int
 
   let compare (t0, t1) (s0, s1) =
     match Int.compare t0 s0 with 0 -> Int.compare t1 s1 | v -> v
 
+  let add (t0, t1) (s0, s1) = (t0 + s0, t1 + s1)
+
   let to_string (x, y) = Printf.sprintf "(%d, %d)" x y
 end
 
 module Map = struct
-  include Map.Make (Coordinate)
+  include Map.Make (C)
 
   let is_visible coord m =
     let h = get_or coord m ~default:(-1) in
-    let rec aux (x, y) (x', y') =
-      match get (x + x', y + y') m with
+    let rec aux c d =
+      let neighbor = C.add c d in
+      match get neighbor m with
       | None ->
           true
       | Some h' ->
-          if h > h' then aux (x + x', y + y') (x', y') else false
+          if h > h' then aux neighbor d else false
     in
     aux coord (0, 1)
     || aux coord (0, -1)
@@ -30,13 +33,14 @@ module Map = struct
 
   let score coord m =
     let h = get_or coord m ~default:(-1) in
-    let rec aux (x, y) (x', y') count =
-      match get (x + x', y + y') m with
+    let rec aux c d count =
+      let neighbor = C.add c d in
+      match get neighbor m with
       | None ->
           count
       | Some h' ->
           let count = count + 1 in
-          if h > h' then aux (x + x', y + y') (x', y') count else count
+          if h > h' then aux neighbor d count else count
     in
     aux coord (0, 1) 0
     * aux coord (0, -1) 0
