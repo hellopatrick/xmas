@@ -1,0 +1,7 @@
+(executable
+ (public_name day08)
+ (name main)
+ (libraries containers))
+
+(cram
+ (deps %{bin:day08}))
