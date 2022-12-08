@@ -35,8 +35,8 @@ module Map = struct
       | None ->
           count
       | Some h' ->
-          if h > h' then aux (x + x', y + y') (x', y') (count + 1)
-          else count + 1
+          let count = count + 1 in
+          if h > h' then aux (x + x', y + y') (x', y') count else count
     in
     aux coord (0, 1) 0
     * aux coord (0, -1) 0
