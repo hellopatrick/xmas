@@ -1,3 +1,1 @@
-open Base
-
-let sum = List.fold ~init:0 ~f:Int.( + )
+let[@inline] sum lst = List.fold_left ( + ) 0 lst

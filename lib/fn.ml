@@ -1,3 +1,3 @@
-open Core
+let[@inline] compose f g x = g (f x)
 
-let ( % ) = Fn.compose
+let ( % ) = compose
