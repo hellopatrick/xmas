@@ -6,8 +6,7 @@ module Coordinate = struct
   type t = int * int
 
   let compare (t0, t1) (s0, s1) =
-    let v = Int.compare t0 s0 in
-    if v = 0 then Int.compare t1 s1 else v
+    match Int.compare t0 s0 with 0 -> Int.compare t1 s1 | v -> v
 
   let to_string (x, y) = Printf.sprintf "(%d, %d)" x y
 end
@@ -15,7 +14,7 @@ end
 module Map = struct
   include Map.Make (Coordinate)
 
-  let visible coord m =
+  let visible_neighbors coord m =
     let h = get_or coord m ~default:(-1) in
     let rec aux (x, y) (x', y') =
       match get (x + x', y + y') m with
@@ -29,7 +28,7 @@ module Map = struct
     || aux coord (1, 0)
     || aux coord (-1, 0)
 
-  let view_distance coord m =
+  let score coord m =
     let h = get_or coord m ~default:(-1) in
     let rec aux (x, y) (x', y') count =
       match get (x + x', y + y') m with
@@ -56,10 +55,11 @@ let parse lines =
         acc chars )
     Map.empty lines
 
-let part1 m = m |> Map.filter (fun c _ -> Map.visible c m) |> Map.cardinal
+let part1 m =
+  m |> Map.filter (fun c _ -> Map.visible_neighbors c m) |> Map.cardinal
 
 let part2 m =
-  let scores = m |> Map.mapi (fun c _ -> Map.view_distance c m) in
+  let scores = m |> Map.mapi (fun c _ -> Map.score c m) in
   Map.fold (fun _ v max -> if v > max then v else max) scores 0
 
 let map = parse input
