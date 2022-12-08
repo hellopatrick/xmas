@@ -14,7 +14,7 @@ end
 module Map = struct
   include Map.Make (Coordinate)
 
-  let visible_neighbors coord m =
+  let is_visible coord m =
     let h = get_or coord m ~default:(-1) in
     let rec aux (x, y) (x', y') =
       match get (x + x', y + y') m with
@@ -55,8 +55,7 @@ let parse lines =
         acc chars )
     Map.empty lines
 
-let part1 m =
-  m |> Map.filter (fun c _ -> Map.visible_neighbors c m) |> Map.cardinal
+let part1 m = m |> Map.filter (fun c _ -> Map.is_visible c m) |> Map.cardinal
 
 let part2 m =
   let scores = m |> Map.mapi (fun c _ -> Map.score c m) in
