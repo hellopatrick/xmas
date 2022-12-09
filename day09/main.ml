@@ -16,7 +16,7 @@ let parse input =
           | 'R' ->
               List.init dist (fun _ -> (1, 0))
           | _ ->
-              failwith "invalid" ) )
+              failwith "invalid direction." ) )
     input
   |> List.flatten
 
