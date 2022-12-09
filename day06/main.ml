@@ -1,12 +1,14 @@
-open Core
+open Containers
 
-let input = In_channel.(input_all stdin) |> String.to_list
+let input = IO.(read_all stdin) |> String.to_list
+
+module CS = Set.Make (Char)
 
 let part' s n =
   let rec aux s i =
-    let header = List.take s n in
-    let unique = Char.Set.of_list header in
-    if Char.Set.length unique = n then n + i else aux (List.tl_exn s) (i + 1)
+    let header = List.take n s in
+    let unique = CS.of_list header in
+    if CS.cardinal unique = n then n + i else aux (List.tl s) (i + 1)
   in
   aux s 0
 
