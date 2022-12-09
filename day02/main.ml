@@ -1,6 +1,6 @@
-open Core
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.(read_lines_l stdin)
 
 module Move = struct
   type t = Rock | Paper | Scissors
@@ -43,12 +43,12 @@ end
 
 let parse input =
   List.map
-    ~f:(fun l -> Round.{me= Move.of_char l.[2]; them= Move.of_char l.[0]})
+    (fun l -> Round.{me= Move.of_char l.[2]; them= Move.of_char l.[0]})
     input
 
 let parse' input =
   List.map
-    ~f:(fun l ->
+    (fun l ->
       let them = Move.of_char l.[0] in
       match l.[2] with
       | 'X' ->
@@ -62,9 +62,9 @@ let parse' input =
     input
 
 let part1 input =
-  input |> parse |> List.fold ~init:0 ~f:(fun acc r -> acc + Round.points r)
+  input |> parse |> List.fold_left (fun acc r -> acc + Round.points r) 0
 
 let part2 input =
-  input |> parse' |> List.fold ~init:0 ~f:(fun acc r -> acc + Round.points r)
+  input |> parse' |> List.fold_left (fun acc r -> acc + Round.points r) 0
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
