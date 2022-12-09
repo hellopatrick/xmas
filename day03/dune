@@ -1,7 +1,7 @@
 (executable
  (public_name day03)
  (name main)
- (libraries xmas core))
+ (libraries xmas containers))
 
 (cram
  (deps %{bin:day03}))

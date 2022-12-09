@@ -1,11 +1,11 @@
-open Core
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.(read_lines_l stdin)
 
 module CharSet = struct
-  include Char.Set
+  include Set.Make (Char)
 
-  let of_string = Fn.compose of_list String.to_list
+  let of_string s = s |> String.to_iter |> of_iter
 end
 
 let priority c =
@@ -19,25 +19,25 @@ let priority c =
 
 let part1 input =
   List.map
-    ~f:(fun str ->
+    (fun str ->
       let len = String.length str in
       let len = len / 2 in
-      ( CharSet.of_string (String.sub str ~pos:0 ~len)
-      , CharSet.of_string (String.sub str ~pos:len ~len) ) )
+      ( CharSet.of_string (String.sub str 0 len)
+      , CharSet.of_string (String.sub str len len) ) )
     input
-  |> List.map ~f:(fun (first, second) -> CharSet.inter first second)
-  |> List.fold ~init:0 ~f:(fun acc c -> acc + priority (CharSet.choose_exn c))
+  |> List.map (fun (first, second) -> CharSet.inter first second)
+  |> List.fold_left (fun acc c -> acc + priority (CharSet.choose c)) 0
 
 let part2 input =
   let rec aux rucksacks common =
     match rucksacks with
     | a :: b :: c :: tl ->
-        let cc = CharSet.inter a b |> CharSet.inter c |> CharSet.choose_exn in
+        let cc = CharSet.inter a b |> CharSet.inter c |> CharSet.choose in
         aux tl (cc :: common)
     | _ ->
         common
   in
-  let i = List.map ~f:CharSet.of_string input in
-  aux i [] |> List.fold ~init:0 ~f:(fun acc c -> acc + priority c)
+  let i = List.map CharSet.of_string input in
+  aux i [] |> List.fold_left (fun acc c -> acc + priority c) 0
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
