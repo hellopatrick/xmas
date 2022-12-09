@@ -60,7 +60,7 @@ let solve input len =
             (h', []) r
         in
         (h', List.rev r', V.add t' v) )
-      ((0, 0), rope, V.of_list [(0, 0)])
+      ((0, 0), rope, V.singleton (0, 0))
       steps
   in
   V.cardinal v
