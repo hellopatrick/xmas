@@ -1,6 +1,6 @@
-open Core
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.(read_lines_l stdin)
 
 module Move = struct
   type t = {src: int; dst: int; amt: int}
@@ -12,11 +12,10 @@ end
 
 let parse lines =
   let stacks, moves =
-    List.split_while lines ~f:(fun s -> not (String.is_empty s))
+    List.take_drop_while (fun s -> not @@ String.is_empty s) lines
   in
-  let stacks = List.map stacks ~f:String.to_list in
-  let moves = List.tl_exn moves in
-  let moves = List.map moves ~f:Move.parse in
+  let stacks = List.map String.to_list stacks in
+  let moves = List.tl moves |> List.map Move.parse in
   (Array.of_list stacks, moves)
 
 let solve_inplace f stack moves =
@@ -28,13 +27,13 @@ let solve_inplace f stack moves =
         let Move.{src; dst; amt} = mv in
         let s = stack.(src) in
         let d = stack.(dst) in
-        let top, bot = List.split_n s amt in
-        Array.set stack src bot ;
-        Array.set stack dst (List.concat [f top; d]) ;
+        let top, bot = List.take_drop amt s in
+        stack.(src) <- bot ;
+        stack.(dst) <- List.concat [f top; d] ;
         aux tl
   in
   let _ = aux moves in
-  Array.map stack ~f:List.hd_exn |> Array.to_list |> String.of_char_list
+  stack |> Array.map List.hd |> Array.to_list |> String.of_list
 
 let part1 input =
   let stack, moves = parse input in
@@ -42,6 +41,6 @@ let part1 input =
 
 let part2 input =
   let stack, moves = parse input in
-  solve_inplace Fn.id stack moves
+  solve_inplace Fun.id stack moves
 
 let _ = Printf.printf "part1=%s;part2=%s" (part1 input) (part2 input)
