@@ -1,22 +1,22 @@
-open Core
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.(read_lines_l stdin)
 
 let parse lines =
-  let hm = Hashtbl.create (module String) in
+  let hm = Hashtbl.create 10 in
   let rec aux lines path =
     match lines with
     | [] ->
         hm
     | "$ ls" :: tl ->
         aux tl path
-    | line :: tl when String.is_prefix line ~prefix:"dir" ->
+    | line :: tl when String.prefix line ~pre:"dir" ->
         aux tl path
-    | line :: tl when String.is_prefix line ~prefix:"$ cd" -> (
-        let name = Scanf.sscanf line "$ cd %s" Fn.id in
+    | line :: tl when String.prefix line ~pre:"$ cd" -> (
+        let name = Scanf.sscanf line "$ cd %s" Fun.id in
         match name with
         | ".." ->
-            aux tl (List.tl_exn path)
+            aux tl (List.tl path)
         | _ ->
             aux tl (name :: path) )
     | line :: tl ->
@@ -24,18 +24,18 @@ let parse lines =
           Scanf.sscanf line "%d %s" (fun size name -> (size, name))
         in
         let _ =
-          List.fold_right path
-            ~f:(fun comp acc ->
-              let key = acc ^ comp in
+          List.fold_right
+            (fun comp acc ->
+              let k = acc ^ comp in
               let _ =
-                Hashtbl.update hm key ~f:(function
-                  | None ->
-                      data
-                  | Some v ->
-                      v + data )
+                Hashtbl.update hm
+                  ~f:(fun _ b ->
+                    match b with None -> Some data | Some v -> Some (v + data)
+                    )
+                  ~k
               in
-              key )
-            ~init:""
+              k )
+            path ""
         in
         aux tl path
   in
@@ -44,18 +44,18 @@ let parse lines =
 let disk = parse input
 
 let part1 disk =
-  Hashtbl.fold disk ~init:0 ~f:(fun ~key:_ ~data acc ->
-      if data <= 100000 then acc + data else acc )
+  Hashtbl.fold
+    (fun _ data acc -> if data <= 100000 then acc + data else acc)
+    disk 0
 
 let part2 disk =
   let max_space = 70000000 in
   let required_space = 30000000 in
-  let used_space = Hashtbl.find_exn disk "/" in
+  let used_space = Hashtbl.find disk "/" in
   let free_space = max_space - used_space in
   let needed_space = required_space - free_space in
-  Hashtbl.fold ~init:Int.max_value
-    ~f:(fun ~key:_ ~data acc ->
-      if data >= needed_space && data < acc then data else acc )
-    disk
+  Hashtbl.fold
+    (fun _ data acc -> if data >= needed_space && data < acc then data else acc)
+    disk Int.max_int
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 disk) (part2 disk)
