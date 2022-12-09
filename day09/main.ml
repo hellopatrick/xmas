@@ -23,6 +23,8 @@ let parse input =
 module C = struct
   type t = int * int
 
+  let zero _ = (0, 0)
+
   let compare (t0, t1) (s0, s1) =
     match Int.compare t0 s0 with 0 -> Int.compare t1 s1 | v -> v
 
@@ -34,11 +36,9 @@ module C = struct
     Int.abs (hx - tx) <= 1 && Int.abs (hy - ty) <= 1
 
   let approach (hx, hy) (tx, ty) =
-    let dx = hx - tx in
-    let dy = hy - ty in
-    let dx_sign = Int.sign dx in
-    let dy_sign = Int.sign dy in
-    (tx + dx_sign, ty + dy_sign)
+    let dx = Int.sign (hx - tx) in
+    let dy = Int.sign (hy - ty) in
+    (tx + dx, ty + dy)
 
   let follow h t = if touching h t then t else approach h t
 end
@@ -47,7 +47,7 @@ module V = Set.Make (C)
 
 let solve input len =
   let steps = parse input in
-  let rope = List.init (len - 1) (fun _ -> (0, 0)) in
+  let rope = List.init (len - 1) C.zero in
   let _, _, v =
     List.fold_left
       (fun (h, r, v) mv ->
