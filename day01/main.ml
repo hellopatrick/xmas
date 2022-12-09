@@ -1,18 +1,17 @@
-open Core
-open Xmas.Option
+open Containers
 
-let input = In_channel.(input_lines stdin)
+let input = IO.(read_lines_l stdin)
 
 let sorted_elves_capacity l =
   let f (elf, elves) r =
-    let open Core.Option in
-    int_of_string_opt r >>| (fun i -> (i + elf, elves)) |? lazy (0, elf :: elves)
+    if String.is_empty r then (0, elf :: elves)
+    else (int_of_string r + elf, elves)
   in
-  let last, elves = List.fold l ~init:(0, []) ~f in
-  last :: elves |> List.sort ~compare |> List.rev
+  let last, elves = List.fold_left f (0, []) l in
+  last :: elves |> List.sort compare |> List.rev
 
 let _ =
   let elves = sorted_elves_capacity input in
-  let part1 = List.hd_exn elves in
-  let part2 = List.take elves 3 |> Xmas.Enum.sum in
+  let part1 = List.hd elves in
+  let part2 = List.take 3 elves |> Xmas.Enum.sum in
   Printf.printf "part1=%d;part2=%d" part1 part2
