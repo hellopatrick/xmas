@@ -45,22 +45,9 @@ end
 
 module V = Set.Make (C)
 
-let part1 input =
+let solve input len =
   let steps = parse input in
-  let _, _, v =
-    List.fold_left
-      (fun (h, t, v) mv ->
-        let h' = C.add h mv in
-        let t' = C.follow h' t in
-        (h', t', V.add t' v) )
-      ((0, 0), (0, 0), V.of_list [(0, 0)])
-      steps
-  in
-  V.cardinal v
-
-let part2 input =
-  let steps = parse input in
-  let rope = List.init 9 (fun _ -> (0, 0)) in
+  let rope = List.init (len - 1) (fun _ -> (0, 0)) in
   let _, _, v =
     List.fold_left
       (fun (h, r, v) mv ->
@@ -78,4 +65,4 @@ let part2 input =
   in
   V.cardinal v
 
-let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
+let _ = Printf.printf "part1=%d;part2=%d" (solve input 2) (solve input 10)
