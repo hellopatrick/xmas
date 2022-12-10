@@ -39,7 +39,7 @@ let part2 h =
     List.fold_left
       (fun (i, b) s ->
         let x = i mod 40 in
-        if x = 0 && i > 0 then Buffer.add_char b '\n' ;
+        if x = 0 then Buffer.add_char b '\n' ;
         let c = if Int.abs (x - s) <= 1 then '#' else ' ' in
         Buffer.add_char b c ;
         (i + 1, b) )
@@ -48,4 +48,4 @@ let part2 h =
   in
   buf |> Buffer.to_seq |> String.of_seq
 
-let _ = Printf.printf "part1=%dpart2=\n%s" (part1 h) (part2 h)
+let _ = Printf.printf "part1=%dpart2=%s" (part1 h) (part2 h)
