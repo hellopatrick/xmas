@@ -29,23 +29,14 @@ let history input =
   in
   List.rev history
 
-let h = history input
-
 let part1 h =
   List.foldi (fun acc i s -> acc + if (i - 20) mod 40 = 0 then i * s else 0) 0 h
 
 let part2 h =
-  let _, buf =
-    List.fold_left
-      (fun (i, b) s ->
-        let x = i mod 40 in
-        if x = 0 then Buffer.add_char b '\n' ;
-        let c = if Int.abs (x - s) <= 1 then '#' else ' ' in
-        Buffer.add_char b c ;
-        (i + 1, b) )
-      (0, Buffer.create 240)
-      (List.drop 1 h)
-  in
-  buf |> Buffer.to_seq |> String.of_seq
+  let draw i x = if Int.abs (i - x) <= 1 then '#' else ' ' in
+  let draw_line = Fun.compose (List.mapi draw) String.of_list in
+  h |> List.drop 1 |> List.chunks 40 |> List.map draw_line |> String.concat "\n"
 
-let _ = Printf.printf "part1=%dpart2=%s" (part1 h) (part2 h)
+let _ =
+  let h = history input in
+  Printf.printf "part1=%dpart2=\n%s" (part1 h) (part2 h)
