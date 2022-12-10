@@ -24,27 +24,28 @@ let history input =
         | Cmd.AddX dx ->
             let x' = x + dx in
             (x', x' :: x :: hist) )
-      (1, [1; 1]) (* hack *)
+      (1, [1; 1])
       cmds
   in
-  List.rev history |> Array.of_list
+  List.rev history
 
 let h = history input
 
-let part1 _ =
-  List.fold_left (fun acc i -> acc + (i * h.(i))) 0 [20; 60; 100; 140; 180; 220]
+let part1 h =
+  List.foldi (fun acc i s -> acc + if (i - 20) mod 40 = 0 then i * s else 0) 0 h
 
-let part2 _ =
-  let crt = Array.init 6 (fun _ -> Array.make 40 ' ') in
-  for i = 1 to 240 do
-    let y = (i - 1) / 40 in
-    let x = (i - 1) mod 40 in
-    let s = h.(i) in
-    let c = if x >= s - 1 && x <= s + 1 then '#' else ' ' in
-    crt.(y).(x) <- c
-  done ;
-  Array.iter (fun l -> Array.iter print_char l ; print_newline ()) crt
+let part2 h =
+  let _, buf =
+    List.fold_left
+      (fun (i, b) s ->
+        let x = i mod 40 in
+        if x = 0 && i > 0 then Buffer.add_char b '\n' ;
+        let c = if Int.abs (x - s) <= 1 then '#' else ' ' in
+        Buffer.add_char b c ;
+        (i + 1, b) )
+      (0, Buffer.create 240)
+      (List.drop 1 h)
+  in
+  buf |> Buffer.to_seq |> String.of_seq
 
-let _ = Printf.printf "part1=%dpart2=\n" (part1 ())
-
-let _ = part2 ()
+let _ = Printf.printf "part1=%dpart2=\n%s" (part1 h) (part2 h)
