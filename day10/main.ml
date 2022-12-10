@@ -35,12 +35,12 @@ let part1 input =
 
 let part2 input =
   let h = history input in
-  let crt = Array.init 6 (fun _ -> Array.make 40 '.') in
+  let crt = Array.init 6 (fun _ -> Array.make 40 ' ') in
   for i = 1 to 240 do
     let y = (i - 1) / 40 in
     let x = (i - 1) mod 40 in
     let s = h.(i) in
-    let c = if x >= s - 1 && x <= s + 1 then '#' else '.' in
+    let c = if x >= s - 1 && x <= s + 1 then '#' else ' ' in
     crt.(y).(x) <- c
   done ;
   Array.iter (fun l -> Array.iter print_char l ; print_newline ()) crt
