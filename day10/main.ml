@@ -29,12 +29,12 @@ let history input =
   in
   List.rev history |> Array.of_list
 
-let part1 input =
-  let h = history input in
+let h = history input
+
+let part1 _ =
   List.fold_left (fun acc i -> acc + (i * h.(i))) 0 [20; 60; 100; 140; 180; 220]
 
-let part2 input =
-  let h = history input in
+let part2 _ =
   let crt = Array.init 6 (fun _ -> Array.make 40 ' ') in
   for i = 1 to 240 do
     let y = (i - 1) / 40 in
@@ -45,6 +45,6 @@ let part2 input =
   done ;
   Array.iter (fun l -> Array.iter print_char l ; print_newline ()) crt
 
-let _ = Printf.printf "part1=%dpart2=\n" (part1 input)
+let _ = Printf.printf "part1=%dpart2=\n" (part1 ())
 
-let _ = part2 input
+let _ = part2 ()
