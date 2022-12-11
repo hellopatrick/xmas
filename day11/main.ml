@@ -34,8 +34,8 @@ module P = struct
     whitespace *> string "Monkey " *> num <* take_till is_eol <* end_of_line
 
   let items =
-    whitespace *> string "Starting items: " *> take_till is_eol
-    <* end_of_line >>| String.split ~by:", " >>| List.map Int.of_string_exn
+    whitespace *> string "Starting items: " *> sep_by (string ", ") num
+    <* end_of_line
 
   let add =
     whitespace *> string "Operation: new = old + " *> num
@@ -66,10 +66,9 @@ module P = struct
     (fun name items op test if_true if_false ->
       M.{name; items; op; test; if_true; if_false; seen= 0} )
     <$> name <*> items <*> op <*> test <*> if_true <*> if_false
-    <* many end_of_line
 
   let parse input =
-    parse_string ~consume:All (many monkey) input
+    parse_string ~consume:All (sep_by (many @@ string "\n") monkey) input
     |> Result.get_or_failwith |> Array.of_list
 end
 
