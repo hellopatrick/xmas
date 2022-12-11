@@ -26,8 +26,7 @@ module P = struct
 
   let is_digit = function '0' .. '9' -> true | _ -> false
 
-  let num =
-    take_while is_digit >>| fun l -> Printf.printf "%s\n" l ; int_of_string l
+  let num = take_while is_digit >>| Int.of_string_exn
 
   let whitespace = take_while is_whitespace
 
