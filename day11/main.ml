@@ -6,16 +6,14 @@ module O = struct
   let handle i = function Add j -> i + j | Mult j -> i * j | Square -> i * i
 end
 
-module M = struct
-  type t =
-    { name: int
-    ; items: int list
-    ; op: O.t
-    ; test: int
-    ; if_true: int
-    ; if_false: int
-    ; seen: int }
-end
+type monkey =
+  { name: int
+  ; items: int list
+  ; op: O.t
+  ; test: int
+  ; if_true: int
+  ; if_false: int
+  ; seen: int }
 
 module P = struct
   open Angstrom
@@ -23,9 +21,10 @@ module P = struct
 
   let name = whitespace *> string "Monkey " *> number <* chomp_eol
 
+  let comma = string ", "
+
   let items =
-    whitespace *> string "Starting items: " *> sep_by (string ", ") number
-    <* chomp_eol
+    whitespace *> string "Starting items: " *> sep_by comma number <* chomp_eol
 
   let add =
     whitespace *> string "Operation: new = old + " *> number
@@ -53,7 +52,7 @@ module P = struct
 
   let monkey =
     (fun name items op test if_true if_false ->
-      M.{name; items; op; test; if_true; if_false; seen= 0} )
+      {name; items; op; test; if_true; if_false; seen= 0} )
     <$> name <*> items <*> op <*> test <*> if_true <*> if_false
 
   let parse input =
@@ -63,7 +62,6 @@ end
 
 let solve monkeys rounds wd =
   let run s m =
-    let open M in
     let len =
       List.fold_left
         (fun acc i ->
@@ -85,7 +83,6 @@ let solve monkeys rounds wd =
   aux 1 monkeys
   |> Array.fold
        (fun (m1, m2) n ->
-         let open M in
          if n.seen > m1 then (n.seen, m1)
          else if n.seen > m2 then (m1, n.seen)
          else (m1, m2) )
@@ -98,7 +95,7 @@ let part1 input =
 
 let part2 input =
   let monkeys = P.parse input in
-  let wd = Array.fold (fun a m -> a * M.(m.test)) 1 monkeys in
+  let wd = Array.fold (fun a m -> a * m.test) 1 monkeys in
   solve monkeys 10000 (fun wl -> wl mod wd)
 
 let _ =
