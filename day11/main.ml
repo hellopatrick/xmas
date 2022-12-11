@@ -19,48 +19,37 @@ end
 
 module P = struct
   open Angstrom
+  open Xmas.Parsing
 
-  let is_eol = function '\n' | '\r' -> true | _ -> false
-
-  let is_whitespace = function ' ' | '\t' -> true | _ -> false
-
-  let is_digit = function '0' .. '9' -> true | _ -> false
-
-  let num = take_while is_digit >>| Int.of_string_exn
-
-  let whitespace = take_while is_whitespace
-
-  let name =
-    whitespace *> string "Monkey " *> num <* take_till is_eol <* end_of_line
+  let name = whitespace *> string "Monkey " *> number <* chomp_eol
 
   let items =
-    whitespace *> string "Starting items: " *> sep_by (string ", ") num
-    <* end_of_line
+    whitespace *> string "Starting items: " *> sep_by (string ", ") number
+    <* chomp_eol
 
   let add =
-    whitespace *> string "Operation: new = old + " *> num
-    <* end_of_line
-    >>| fun l -> O.Add l
+    whitespace *> string "Operation: new = old + " *> number
+    >>| (fun l -> O.Add l)
+    <* chomp_eol
 
   let mult =
-    whitespace *> string "Operation: new = old * " *> num
-    <* end_of_line
-    >>| fun l -> O.Mult l
+    whitespace *> string "Operation: new = old * " *> number
+    >>| (fun l -> O.Mult l)
+    <* chomp_eol
 
   let square =
     whitespace *> string "Operation: new = old * old"
-    <* end_of_line
-    >>| fun _ -> O.Square
+    >>| Fun.const O.Square <* chomp_eol
 
   let op = add <|> square <|> mult
 
-  let test = whitespace *> string "Test: divisible by " *> num <* end_of_line
+  let test = whitespace *> string "Test: divisible by " *> number <* chomp_eol
 
   let if_true =
-    whitespace *> string "If true: throw to monkey " *> num <* end_of_line
+    whitespace *> string "If true: throw to monkey " *> number <* chomp_eol
 
   let if_false =
-    whitespace *> string "If false: throw to monkey " *> num <* end_of_line
+    whitespace *> string "If false: throw to monkey " *> number <* chomp_eol
 
   let monkey =
     (fun name items op test if_true if_false ->
@@ -68,7 +57,7 @@ module P = struct
     <$> name <*> items <*> op <*> test <*> if_true <*> if_false
 
   let parse input =
-    parse_string ~consume:All (sep_by end_of_line monkey) input
+    parse_string ~consume:All (sep_by chomp_eol monkey) input
     |> Result.get_or_failwith |> Array.of_list
 end
 
