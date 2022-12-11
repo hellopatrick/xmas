@@ -68,7 +68,7 @@ module P = struct
     <$> name <*> items <*> op <*> test <*> if_true <*> if_false
 
   let parse input =
-    parse_string ~consume:All (sep_by (many @@ string "\n") monkey) input
+    parse_string ~consume:All (sep_by end_of_line monkey) input
     |> Result.get_or_failwith |> Array.of_list
 end
 
