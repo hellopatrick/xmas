@@ -33,26 +33,25 @@ let solve m s e =
     if Queue.is_empty q then Int.max_int
     else
       let loc = Queue.pop q in
-      let v = M.get loc m |> Option.get_exn_or "unreach." in
+      let h = M.get loc m |> Option.get_exn_or "unreach." in
       let dist = M.get loc d |> Option.get_exn_or "unreach." in
       if Xmas.Coordinate.equal loc e then dist
       else
-        let n = neighbors loc in
         let n =
           List.filter
             (fun l ->
-              match M.get l m with
-              | None ->
+              match (M.get l m, M.get l d) with
+              | None, _ | _, Some _ ->
                   false
-              | Some c ->
-                  let dh = height c - height v in
-                  if dh > 1 then false else M.get l d |> Option.is_none )
-            n
+              | Some h', _ ->
+                  let dh = height h' - height h in
+                  dh <= 1 )
+            (neighbors loc)
         in
         Queue.add_seq q (List.to_seq n) ;
         let d =
           List.fold_left
-            (fun acc c -> M.update c (fun _ -> Some (dist + 1)) acc)
+            (fun acc c -> M.update c (Fun.const (Some (dist + 1))) acc)
             d n
         in
         aux d
