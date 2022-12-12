@@ -34,7 +34,7 @@ let solve m s e =
     if Queue.is_empty q then Int.max_int
     else
       let loc = Queue.pop q in
-      let h = M.get loc m |> get in
+      let elev = M.get loc m |> get in
       let dist = M.get loc ds |> get in
       if C.equal loc e then dist
       else
@@ -44,8 +44,8 @@ let solve m s e =
               match (M.get l m, M.get l ds) with
               | None, _ | _, Some _ ->
                   false
-              | Some h', _ ->
-                  let dh = height h' - height h in
+              | Some elev', _ ->
+                  let dh = height elev' - height elev in
                   dh <= 1 )
             (neighbors loc)
         in
