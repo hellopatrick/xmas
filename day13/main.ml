@@ -22,9 +22,10 @@ module Packet = struct
         -1
     | _, [] ->
         1
-    | hda :: tla, hdb :: tlb ->
-        let res = compare hda hdb in
-        if 0 = res then compare_lst tla tlb else res
+    | hda :: tla, hdb :: tlb -> (
+      match compare hda hdb with 0 -> compare_lst tla tlb | res -> res )
+
+  let equals t s = match compare t s with 0 -> true | _ -> false
 
   let rec pp t =
     match t with
@@ -34,32 +35,23 @@ module Packet = struct
         Printf.sprintf "[%s]" (List.map pp t |> String.concat ",")
 end
 
-let input = IO.read_lines_l stdin
-
 module PP = struct
   open Angstrom
   open Xmas.Parsing
   open Packet
 
-  let comma = char ','
-
-  let f =
+  let pkt =
+    let comma = char ',' in
+    let lsb = char '[' in
+    let rsb = char ']' in
+    let num = number >>| fun n -> Num n in
+    let to_lst l = Lst l in
     fix (fun packet ->
-        let pkt =
-          advance 1 *> sep_by comma packet <* char ']' >>| fun l -> Lst l
-        in
-        let empty = string "[]" >>| fun _ -> Lst [] in
-        let num = number >>| fun i -> Num i in
-        peek_char_fail
-        >>= function
-        | '[' ->
-            choice [empty; pkt]
-        | '0' .. '9' ->
-            num
-        | c ->
-            failwith @@ Printf.sprintf "unknown char: %c" c )
+        let lst = packet >>| to_lst in
+        lsb *> sep_by comma (num <|> lst) <* rsb )
+    >>| to_lst
 
-  let parse s = parse_string ~consume:All f s |> Result.get_or_failwith
+  let parse s = parse_string ~consume:All pkt s |> Result.get_or_failwith
 end
 
 let parse ls =
@@ -67,35 +59,40 @@ let parse ls =
     match ls with
     | [] ->
         List.rev out
+    | "" :: tl ->
+        aux tl out
     | a :: b :: tl ->
         aux tl ((PP.parse a, PP.parse b) :: out)
-    | hd :: _ ->
-        failwith hd
+    | _ ->
+        failwith "bad input."
   in
-  aux (List.filter (fun a -> String.length a > 0) ls) []
+  aux ls []
 
-let part1 input =
-  let pairs = parse input in
+let part1 pairs =
   List.foldi
     (fun acc i (a, b) -> if Packet.compare a b < 0 then acc + i + 1 else acc)
     0 pairs
 
-let part2 input =
+let part2 pairs =
   let d2 = PP.parse "[[2]]" in
   let d6 = PP.parse "[[6]]" in
-  let packets = parse input |> List.flat_map (fun (a, b) -> [a; b]) in
-  let packets = d2 :: d6 :: packets in
-  let packets = List.sort Packet.compare packets in
+  let packets = List.flat_map (fun (a, b) -> [a; b]) pairs in
+  let packets = d2 :: d6 :: packets |> List.sort Packet.compare in
   let i2 =
-    List.find_idx (fun a -> 0 = Packet.compare a d2) packets
-    |> Option.get_exn_or "impossible"
-    |> fst
+    ( List.find_idx (Packet.equals d2) packets
+    |> Option.get_exn_or "[[2]] must exist"
+    |> fst )
+    + 1
   in
   let i6 =
-    List.find_idx (fun a -> 0 = Packet.compare a d6) packets
-    |> Option.get_exn_or "impossible"
-    |> fst
+    ( List.find_idx (Packet.equals d6) packets
+    |> Option.get_exn_or "[[6]] must exist"
+    |> fst )
+    + 1
   in
-  (i2 + 1) * (i6 + 1)
+  i2 * i6
 
-let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
+let _ =
+  let input = IO.read_lines_l stdin in
+  let pairs = parse input in
+  Printf.printf "part1=%d;part2=%d" (part1 pairs) (part2 pairs)
