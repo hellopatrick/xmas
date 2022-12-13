@@ -51,48 +51,30 @@ module PP = struct
         lsb *> sep_by comma (num <|> lst) <* rsb )
     >>| to_lst
 
-  let parse s = parse_string ~consume:All pkt s |> Result.get_or_failwith
+  let parse s = s |> parse_string ~consume:All pkt |> Result.get_or_failwith
 end
 
-let parse ls =
-  let rec aux ls out =
-    match ls with
-    | [] ->
-        List.rev out
-    | "" :: tl ->
-        aux tl out
-    | a :: b :: tl ->
-        aux tl ((PP.parse a, PP.parse b) :: out)
-    | _ ->
-        failwith "bad input."
-  in
-  aux ls []
+let part1 packets =
+  List.chunks 2 packets
+  |> List.map (function [a; b] -> (a, b) | _ -> failwith "only pairs.")
+  |> List.foldi
+       (fun acc i (a, b) -> if Packet.compare a b < 0 then acc + i + 1 else acc)
+       0
 
-let part1 pairs =
-  List.foldi
-    (fun acc i (a, b) -> if Packet.compare a b < 0 then acc + i + 1 else acc)
-    0 pairs
-
-let part2 pairs =
-  let d2 = PP.parse "[[2]]" in
-  let d6 = PP.parse "[[6]]" in
-  let packets = List.flat_map (fun (a, b) -> [a; b]) pairs in
+let part2 packets =
+  let d2, d6 = (PP.parse "[[2]]", PP.parse "[[6]]") in
   let packets = d2 :: d6 :: packets |> List.sort Packet.compare in
-  let i2 =
-    ( List.find_idx (Packet.equals d2) packets
+  let i2, _ =
+    List.find_idx (Packet.equals d2) packets
     |> Option.get_exn_or "[[2]] must exist"
-    |> fst )
-    + 1
   in
-  let i6 =
-    ( List.find_idx (Packet.equals d6) packets
+  let i6, _ =
+    List.find_idx (Packet.equals d6) packets
     |> Option.get_exn_or "[[6]] must exist"
-    |> fst )
-    + 1
   in
-  i2 * i6
+  (i2 + 1) * (i6 + 1)
 
 let _ =
-  let input = IO.read_lines_l stdin in
-  let pairs = parse input in
-  Printf.printf "part1=%d;part2=%d" (part1 pairs) (part2 pairs)
+  let input = IO.read_lines_l stdin |> List.filter Xmas.Str.is_not_empty in
+  let packets = List.map PP.parse input in
+  Printf.printf "part1=%d;part2=%d" (part1 packets) (part2 packets)
