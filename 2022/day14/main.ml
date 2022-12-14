@@ -1,6 +1,12 @@
 open Containers
 module C = Xmas.Coordinate
-module M = Map.Make (C)
+
+module M = struct
+  include Map.Make (C)
+
+  (* not mem *)
+  let nmem a m = not (mem a m)
+end
 
 module P = struct
   open Angstrom
@@ -50,10 +56,11 @@ let parse input =
 let max_y m = M.fold (fun (_, y) _ acc -> Int.max y acc) m 0
 
 let next_pos ?(floor = Int.max_int) (x, y) m =
-  if y + 1 >= floor then None
-  else if M.find_opt (x, y + 1) m |> Option.is_none then Some (x, y + 1)
-  else if M.find_opt (x - 1, y + 1) m |> Option.is_none then Some (x - 1, y + 1)
-  else if M.find_opt (x + 1, y + 1) m |> Option.is_none then Some (x + 1, y + 1)
+  let y' = y + 1 in
+  if y' >= floor then None
+  else if M.nmem (x, y') m then Some (x, y')
+  else if M.nmem (x - 1, y') m then Some (x - 1, y')
+  else if M.nmem (x + 1, y') m then Some (x + 1, y')
   else None
 
 let run ?(floor = Int.max_int) ?(void = Int.max_int) m =
