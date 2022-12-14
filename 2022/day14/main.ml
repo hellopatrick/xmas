@@ -25,7 +25,7 @@ module B = struct
     match (t, s) with Wall, Wall | Sand, Sand -> true | _ -> false
 end
 
-let draw_line (sx, sy) (fx, fy) m =
+let draw_wall (sx, sy) (fx, fy) m =
   let rec aux map now dir =
     let map' = M.add now B.Wall map in
     if C.equal now (fx, fy) then map' else aux map' (C.add dir now) dir
@@ -39,7 +39,7 @@ let parse input =
   let rec draw map path =
     match path with
     | (sx, sy) :: (fx, fy) :: tl ->
-        let map' = draw_line (sx, sy) (fx, fy) map in
+        let map' = draw_wall (sx, sy) (fx, fy) map in
         draw map' ((fx, fy) :: tl)
     | _ ->
         map
@@ -49,24 +49,22 @@ let parse input =
 
 let max_y m = M.fold (fun (_, y) _ acc -> Int.max y acc) m 0
 
-let next_pos ?(floor = Int.max_int) (nx, ny) m =
-  if ny + 1 >= floor then None
-  else if M.find_opt (nx, ny + 1) m |> Option.is_none then Some (nx, ny + 1)
-  else if M.find_opt (nx - 1, ny + 1) m |> Option.is_none then
-    Some (nx - 1, ny + 1)
-  else if M.find_opt (nx + 1, ny + 1) m |> Option.is_none then
-    Some (nx + 1, ny + 1)
+let next_pos ?(floor = Int.max_int) (x, y) m =
+  if y + 1 >= floor then None
+  else if M.find_opt (x, y + 1) m |> Option.is_none then Some (x, y + 1)
+  else if M.find_opt (x - 1, y + 1) m |> Option.is_none then Some (x - 1, y + 1)
+  else if M.find_opt (x + 1, y + 1) m |> Option.is_none then Some (x + 1, y + 1)
   else None
 
 let run ?(floor = Int.max_int) ?(void = Int.max_int) m =
-  let rec track (nx, ny) m =
-    if ny > void then (m, None)
+  let rec track (x, y) m =
+    if y > void then (m, None)
     else
-      match next_pos ~floor (nx, ny) m with
+      match next_pos ~floor (x, y) m with
       | Some c ->
           track c m
       | None ->
-          (M.add (nx, ny) B.Sand m, Some (nx, ny))
+          (M.add (x, y) B.Sand m, Some (x, y))
   in
   let rec aux s m =
     match track s m with
