@@ -58,12 +58,11 @@ let next_pos ?(floor = Int.max_int) (nx, ny) m =
     Some (nx + 1, ny + 1)
   else None
 
-let run m =
-  let my = max_y m in
+let run ?(floor = Int.max_int) ?(void = Int.max_int) m =
   let rec track (nx, ny) m =
-    if ny > my then (m, None)
+    if ny > void then (m, None)
     else
-      match next_pos (nx, ny) m with
+      match next_pos ~floor (nx, ny) m with
       | Some c ->
           track c m
       | None ->
@@ -80,15 +79,15 @@ let run m =
   in
   aux (500, 0) m
 
-let part1 m = m |> run |> M.filter (fun _ b -> B.equal b Sand) |> M.cardinal
+let count_sand _ b acc = if B.(equal b Sand) then acc + 1 else acc
+
+let part1 m =
+  let m' = m |> run ~void:(max_y m) in
+  M.fold count_sand m' 0
 
 let part2 m =
-  let floor = 2 + max_y m in
-  m
-  |> draw_line (-1000, floor) (1000, floor)
-  |> run
-  |> M.filter (fun _ b -> B.equal b Sand)
-  |> M.cardinal
+  let m' = m |> run ~floor:(2 + max_y m) in
+  M.fold count_sand m' 0
 
 let _ =
   let input = IO.read_lines_l stdin in
