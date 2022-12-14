@@ -2,23 +2,25 @@
 
 num=$1
 day="day$num"
-year="2022"
+year="${2:-2022}"
+exc="$day.$year"
+path="$year/$day"
 
 # solution
 
-mkdir -p "$year/$day"
+mkdir -p "$path"
 
-cat > "$year/$day/dune" <<EOF
+cat > "$path/dune" <<EOF
 (executable
- (public_name $day)
+ (public_name $exc)
  (name main)
  (libraries xmas containers))
 
 (cram
- (deps %{bin:$day}))
+ (deps %{bin:$exc}))
 EOF
 
-cat > "$year/$day/main.ml" <<EOF
+cat > "$path/main.ml" <<EOF
 open Containers
 
 let input = IO.read_lines_l stdin
@@ -28,18 +30,18 @@ EOF
 
 # test files
 
-mkdir -p "$year/$day/test.t"
+mkdir -p "$path/test.t"
 
-touch "$year/$day/test.t/test"
-touch "$year/$day/test.t/input"
+touch "$path/test.t/test"
+touch "$path/test.t/input"
 
-cat > "$year/$day/test.t/run.t" <<EOF
-https://adventofcode.com/2022/day/$num
+cat > "$path/test.t/run.t" <<EOF
+https://adventofcode.com/$year/day/$num
 
-  $ $day < test
+  $ $exc < test
   part1=;part2=
 
-  $ $day < input
+  $ $exc < input
   part1=;part2=
 EOF
 
