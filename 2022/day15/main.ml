@@ -18,6 +18,10 @@ module Range = struct
   let length (t0, t1) = t1 - t0 + 1
 
   let clamp (c0, c1) (t0, t1) = (Int.max c0 t0, Int.min c1 t1)
+
+  let compare (c0, c1) (t0, t1) =
+    let first = Int.compare c0 t0 in
+    if first = 0 then Int.compare c1 t1 else first
 end
 
 let parse lines =
@@ -27,41 +31,25 @@ let parse lines =
   in
   List.map parse_line lines
 
-let find_taken_ranges info ty =
-  let free_regions =
-    List.map (fun (s, b) -> (s, Xmas.Coordinate.manhattan_distance s b)) info
-    |> M.of_list
-  in
-  let have_knowledge =
-    List.map (fun ((sx, sy), _) -> ((sx, sy), Int.abs (sy - ty))) info
-    |> List.filter (fun (s, td) ->
-           match M.get s free_regions with None -> false | Some v -> td < v )
+let find_taken_ranges sensor_ranges ty =
+  let sensors =
+    M.filter (fun (_, sy) range -> range > Int.abs (sy - ty)) sensor_ranges
   in
   let sweep (sx, sy) dist =
-    let c = (sx, ty) in
-    let md = C.manhattan_distance (sx, sy) c in
-    let dd = dist - md in
+    let dd = dist - Int.abs (ty - sy) in
     (sx - dd, sx + dd)
   in
-  List.map
-    (fun ((sx, sy), _) ->
-      let max_d = M.find (sx, sy) free_regions in
-      sweep (sx, sy) max_d )
-    have_knowledge
-  |> List.sort (fun (s0, _) (t0, _) -> Int.compare s0 t0)
-  |> List.fold_left
-       (fun acc r ->
-         match acc with
-         | [] ->
-             [r]
-         | hd :: tl -> (
-           match Range.merge r hd with
-           | Some nr ->
-               nr :: tl
-           | _ ->
-               r :: hd :: tl ) )
-       []
-  |> List.rev
+  M.fold
+    (fun c d acc ->
+      let r = sweep c d in
+      match
+        List.sorted_insert ~cmp:(fun a b -> Int.neg @@ Range.compare a b) r acc
+      with
+      | a :: b :: tl -> (
+        match Range.merge a b with Some r -> r :: tl | _ -> a :: b :: tl )
+      | otherwise ->
+          otherwise )
+    sensors []
 
 let part1 info ty =
   let beacons_on_ty =
@@ -70,32 +58,38 @@ let part1 info ty =
       info
     |> S.of_list |> S.cardinal
   in
+  let sensor_ranges =
+    List.map (fun (s, b) -> (s, C.manhattan_distance s b)) info |> M.of_list
+  in
   let sum =
-    find_taken_ranges info ty
+    find_taken_ranges sensor_ranges ty
     |> List.fold_left (fun acc r -> acc + Range.length r) 0
   in
   sum - beacons_on_ty
 
 let part2 info max =
-  let clamper = Range.clamp (0, max) in
+  let clamp = Range.clamp (0, max) in
+  let sensor_ranges =
+    List.map (fun (s, b) -> (s, C.manhattan_distance s b)) info |> M.of_list
+  in
+  let sweep = find_taken_ranges sensor_ranges in
   let rec aux ty =
-    if ty > max then -1
+    if ty > max then failwith "never found."
     else
-      let ranges = find_taken_ranges info ty |> List.map clamper in
+      let ranges = sweep ty |> List.map clamp in
       let sum =
         ranges |> List.fold_left (fun acc r -> acc + Range.length r) 0
       in
       if 1 = max + 1 - sum then
+        let front = List.hd ranges in
         let x =
-          match ranges with
-          | (0, a) :: _ ->
+          match front with
+          | 0, a ->
               a + 1
-          | (a, b) :: _ when b = max ->
+          | a, b when b = max ->
               a - 1
-          | (_, a) :: _ ->
-              a + 1
-          | _ ->
-              failwith ""
+          | _, b ->
+              b + 1
         in
         (4000000 * x) + ty
       else aux (ty + 1)
