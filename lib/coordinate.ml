@@ -10,3 +10,5 @@ let compare (t0, t1) (s0, s1) =
 let add (t0, t1) (s0, s1) = (t0 + s0, t1 + s1)
 
 let pp (x, y) = Printf.sprintf "(%d, %d)" x y
+
+let manhattan_distance (t0, t1) (s0, s1) = Int.abs (t0 - s0) + Int.abs (t1 - s1)
