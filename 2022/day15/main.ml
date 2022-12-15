@@ -32,34 +32,33 @@ let parse lines =
   List.map parse_line lines
 
 let find_taken_ranges sensor_ranges ty =
-  let sensors =
-    M.filter (fun (_, sy) range -> range > Int.abs (sy - ty)) sensor_ranges
-  in
   let sweep (sx, sy) dist =
     let dd = dist - Int.abs (ty - sy) in
     (sx - dd, sx + dd)
   in
   M.fold
-    (fun c d acc ->
-      let r = sweep c d in
-      match
-        List.sorted_insert ~cmp:(fun a b -> Int.neg @@ Range.compare a b) r acc
-      with
-      | a :: b :: tl -> (
-        match Range.merge a b with Some r -> r :: tl | _ -> a :: b :: tl )
-      | otherwise ->
-          otherwise )
-    sensors []
+    (fun (sx, sy) range acc ->
+      if Int.abs (sy - ty) > range then acc
+      else
+        let r = sweep (sx, sy) range in
+        let res =
+          List.sorted_insert
+            ~cmp:(fun a b -> Int.neg @@ Range.compare a b)
+            r acc
+        in
+        match res with
+        | a :: b :: tl -> (
+          match Range.merge a b with Some r -> r :: tl | _ -> res )
+        | _ ->
+            res )
+    sensor_ranges []
 
-let part1 info ty =
+let part1 sensor_beacons sensor_ranges ty =
   let beacons_on_ty =
-    List.filter_map
-      (fun (_, (bx, by)) -> if by = ty then Some (bx, by) else None)
-      info
-    |> S.of_list |> S.cardinal
-  in
-  let sensor_ranges =
-    List.map (fun (s, b) -> (s, C.manhattan_distance s b)) info |> M.of_list
+    List.fold_left
+      (fun acc (_, (bx, by)) -> if by = ty then S.add (bx, by) acc else acc)
+      S.empty sensor_beacons
+    |> S.cardinal
   in
   let sum =
     find_taken_ranges sensor_ranges ty
@@ -67,11 +66,8 @@ let part1 info ty =
   in
   sum - beacons_on_ty
 
-let part2 info max =
+let part2 sensor_ranges max =
   let clamp = Range.clamp (0, max) in
-  let sensor_ranges =
-    List.map (fun (s, b) -> (s, C.manhattan_distance s b)) info |> M.of_list
-  in
   let sweep = find_taken_ranges sensor_ranges in
   let rec aux ty =
     if ty > max then failwith "never found."
@@ -100,4 +96,9 @@ let _ =
   let ty, tl = List.hd_tl input in
   let info = parse tl in
   let ty = Int.of_string_exn ty in
-  Printf.printf "part1=%d;part2=%d" (part1 info ty) (part2 info (ty * 2))
+  let sensor_ranges =
+    List.map (fun (s, b) -> (s, C.manhattan_distance s b)) info |> M.of_list
+  in
+  Printf.printf "part1=%d;part2=%d"
+    (part1 info sensor_ranges ty)
+    (part2 sensor_ranges (ty * 2))
