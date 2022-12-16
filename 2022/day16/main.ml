@@ -60,9 +60,6 @@ let part1 input =
         VM.add v.name key acc )
       VM.empty valves
   in
-  let _adj =
-    valves |> List.fold_left (fun acc (v : V.t) -> VM.add v.name v acc) VM.empty
-  in
   let adj' =
     List.fold_left
       (fun acc (v : V.t) ->
