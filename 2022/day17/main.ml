@@ -46,6 +46,10 @@ module TS = struct
   let max_height_for_column x t =
     fold (fun (x', y) acc -> if x' = x then max y acc else acc) t (-1)
 
+  let forget t =
+    let h = max_y t in
+    filter (fun (_, y) -> h - 100 <= y) t
+
   let hit t (x, y) shape =
     List.exists
       (fun (dx, dy) ->
@@ -108,6 +112,7 @@ module Tetris = struct
       let jet_idx = jet_idx + 1 in
       if C.equal coord' coord'' then
         let board = TS.settle board coord'' piece in
+        let board = TS.forget board in
         {board; jets; jet_idx; shape_idx= shape_idx + 1}
       else aux jet_idx coord''
     in
