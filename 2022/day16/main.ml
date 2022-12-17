@@ -52,7 +52,7 @@ let parse input =
 
 let floyd_warshall nodes =
   let n = IM.cardinal nodes in
-  let arr = Array.make_matrix n n (n * n) in
+  let arr = Array.make_matrix n n n in
   IM.iter
     (fun x (v : V.t) -> v.conns |> List.iter (fun y -> arr.(y).(x) <- 1))
     nodes ;
