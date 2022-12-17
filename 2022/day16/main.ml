@@ -1,7 +1,7 @@
 open Containers
 
 module V = struct
-  type t = {name: string; flow: int; conns: int list}
+  type t = {flow: int; conns: int list}
 end
 
 module SM = Map.Make (String)
@@ -35,26 +35,26 @@ end
 let input = IO.read_lines_l stdin
 
 let parse input =
-  let data = List.map P.parse input in
+  let data =
+    List.map P.parse input
+    |> List.sort (fun (a, _, _) (b, _, _) -> String.compare a b)
+  in
   let idxs =
     List.foldi (fun acc i (name, _, _) -> SM.add name i acc) SM.empty data
   in
   List.foldi
-    (fun acc i (name, flow, conns) ->
+    (fun acc i (_, flow, conns) ->
       let open V in
       let conns = List.map (fun conn -> SM.find conn idxs) conns in
-      let v = {name; flow; conns} in
+      let v = {flow; conns} in
       IM.add i v acc )
     IM.empty data
 
 let floyd_warshall nodes =
   let n = IM.cardinal nodes in
-  let arr =
-    Array.make_matrix n n (n * n)
-    (* path probably(?) cannot be larger than number of nodes, since all edges are bi-directional *)
-  in
+  let arr = Array.make_matrix n n (n * n) in
   IM.iter
-    (fun i (v : V.t) -> v.conns |> List.iter (fun j -> arr.(i).(j) <- 1))
+    (fun x (v : V.t) -> v.conns |> List.iter (fun y -> arr.(y).(x) <- 1))
     nodes ;
   for z = 0 to n - 1 do
     for y = 0 to n - 1 do
@@ -89,9 +89,7 @@ let dfs nodes fw start rem t =
         let paths = single rem in
         let res =
           paths
-          |> Seq.filter (fun (pt, _) ->
-                 let d = fw.(curr).(pt) in
-                 d <= t )
+          |> Seq.filter (fun (pt, _) -> fw.(curr).(pt) <= t)
           |> Seq.fold_left
                (fun acc (pt, rem') ->
                  let d = fw.(curr).(pt) in
@@ -124,14 +122,11 @@ let dfs' nodes fw start nz t =
     | _ ->
         let res =
           single rem
-          |> Seq.filter (fun (pt, _) ->
-                 let d = fw.(curr).(pt) in
-                 d <= t )
+          |> Seq.filter (fun (pt, _) -> fw.(curr).(pt) <= t)
           |> Seq.fold_left
                (fun acc (pt, rem') ->
-                 let open V in
                  let d = fw.(curr).(pt) in
-                 let {flow; _} = IM.find pt nodes in
+                 let V.{flow; _} = IM.find pt nodes in
                  let t' = t - d - 1 in
                  let flow' = (flow * t') + aux pt rem' t' in
                  Int.max acc flow' )
@@ -150,7 +145,4 @@ let part2 vm sp start =
 let _ =
   let vm = parse input in
   let sp = floyd_warshall vm in
-  let start, _ =
-    vm |> IM.filter (fun _ V.{name; _} -> String.equal name "AA") |> IM.choose
-  in
-  Printf.printf "part1=%d;part2=%d" (part1 vm sp start) (part2 vm sp start)
+  Printf.printf "part1=%d;part2=%d" (part1 vm sp 0) (part2 vm sp 0)
