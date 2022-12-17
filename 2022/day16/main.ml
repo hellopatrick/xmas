@@ -75,11 +75,11 @@ let single l =
       let chosen, tl = List.hd_tl second in
       (chosen, first @ tl) )
 
-let dfs_cache = Hashtbl.create 10
+let cache = Hashtbl.create 10
 
 let dfs nodes fw start rem t =
-  let get k = Hashtbl.get dfs_cache k in
-  let set k v = Hashtbl.add dfs_cache k v in
+  let get k = Hashtbl.get cache k in
+  let set k v = Hashtbl.add cache k v in
   let rec aux curr rem t =
     let k = (curr, pp rem, t) in
     match get k with
@@ -111,8 +111,9 @@ let part1 vm sp start =
   in
   dfs vm sp start nz 30
 
+let cache' = Hashtbl.create 10
+
 let dfs' nodes fw start nz t =
-  let cache' = Hashtbl.create 10 in
   let get k = Hashtbl.get cache' k in
   let set k v = Hashtbl.add cache' k v in
   let rec aux curr rem t =
@@ -121,10 +122,8 @@ let dfs' nodes fw start nz t =
     | Some c ->
         c
     | _ ->
-        let paths = single rem in
-        let res = dfs nodes fw start rem 26 in
         let res =
-          paths
+          single rem
           |> Seq.filter (fun (pt, _) ->
                  let d = fw.(curr).(pt) in
                  d <= t )
@@ -136,7 +135,7 @@ let dfs' nodes fw start nz t =
                  let t' = t - d - 1 in
                  let flow' = (flow * t') + aux pt rem' t' in
                  Int.max acc flow' )
-               res
+               (dfs nodes fw start rem 26)
         in
         set k res ; res
   in
