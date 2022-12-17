@@ -21,7 +21,7 @@ end
 module S = struct
   type t = Flat | Plus | J | I | Square
 
-  let seq = [|Flat; Plus; J; I; Square|]
+  let all = [|Flat; Plus; J; I; Square|]
 
   let coords = function
     | Flat ->
@@ -46,9 +46,9 @@ module TS = struct
   let max_height_for_column x t =
     fold (fun (x', y) acc -> if x' = x then max y acc else acc) t (-1)
 
-  let forget t =
+  let reduce n t =
     let h = max_y t in
-    filter (fun (_, y) -> h - 100 <= y) t
+    filter (fun (_, y) -> h - n <= y) t
 
   let hit t (x, y) shape =
     List.exists
@@ -87,11 +87,9 @@ end
 module Tetris = struct
   type t = {board: TS.t; shape_idx: int; jets: J.t array; jet_idx: int}
 
-  let current_shape i = S.seq.(i mod 5)
+  let current_shape i = S.all.(i mod 5)
 
-  let current_jet i jets =
-    let n = Array.length jets in
-    jets.(i mod n)
+  let current_jet i jets = jets.(i mod Array.length jets)
 
   let height {board; _} = 1 + TS.max_y board
 
@@ -112,14 +110,14 @@ module Tetris = struct
       let jet_idx = jet_idx + 1 in
       if C.equal coord' coord'' then
         let board = TS.settle board coord'' piece in
-        let board = TS.forget board in
+        let board = TS.reduce 100 board in
         {board; jets; jet_idx; shape_idx= shape_idx + 1}
       else aux jet_idx coord''
     in
     aux jet_idx coord
 end
 
-let parse input = String.to_array input |> Array.map J.of_char
+let parse input = input |> String.to_array |> Array.map J.of_char
 
 let show l = Printf.sprintf "[%s]" (List.map C.pp l |> String.concat "; ")
 
