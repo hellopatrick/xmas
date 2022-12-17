@@ -50,19 +50,14 @@ module TS = struct
     let h = max_y t in
     filter (fun (_, y) -> h - n <= y) t
 
-  let hit t (x, y) shape =
+  let hit t c shape =
     List.exists
-      (fun (dx, dy) ->
-        let x', y' = (x + dx, y + dy) in
+      (fun dxy ->
+        let x', y' = C.add c dxy in
         mem (x', y') t || x' < 0 || y' < 0 || x' > 6 )
       shape
 
-  let settle t (x, y) shape =
-    List.fold_left
-      (fun acc (dx, dy) ->
-        let pos = (x + dx, y + dy) in
-        add pos acc )
-      t shape
+  let settle t p shape = List.map (C.add p) shape |> add_list t
 
   let pp t =
     let y = max_y t in
