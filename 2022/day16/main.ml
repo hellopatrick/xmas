@@ -1,20 +1,11 @@
 open Containers
 
-let timelimit = 30
-
 module V = struct
-  type t = {name: string; strength: int; tunnels: string list}
-
-  let compare t s = String.compare t.name s.name
+  type t = {name: string; flow: int; conns: int list}
 end
 
-module VM = struct
-  include Map.Make (String)
-end
-
-module IM = struct
-  include Map.Make (Int)
-end
+module SM = Map.Make (String)
+module IM = Map.Make (Int)
 
 module P = struct
   open Angstrom
@@ -34,7 +25,7 @@ module P = struct
 
   let valve =
     lift3
-      (fun name strength tunnels -> V.{name; strength; tunnels})
+      (fun name strength tunnels -> (name, strength, tunnels))
       name rate list_of_tunnels
 
   let parse line =
@@ -44,70 +35,123 @@ end
 let input = IO.read_lines_l stdin
 
 let parse input =
-  List.map P.parse input
-  |> List.fold_left
-       (fun acc v ->
-         let open V in
-         VM.add v.name v acc )
-       VM.empty
+  let data = List.map P.parse input in
+  let idxs =
+    List.foldi (fun acc i (name, _, _) -> SM.add name i acc) SM.empty data
+  in
+  List.foldi
+    (fun acc i (name, flow, conns) ->
+      let open V in
+      let conns = List.map (fun conn -> SM.find conn idxs) conns in
+      let v = {name; flow; conns} in
+      IM.add i v acc )
+    IM.empty data
 
-let part1 input =
-  let valves = List.map P.parse input |> List.sort V.compare in
-  let keys =
-    List.foldi
-      (fun acc i (v : V.t) ->
-        let key = 1 lsl i in
-        VM.add v.name key acc )
-      VM.empty valves
+let floyd_warshall nodes =
+  let n = IM.cardinal nodes in
+  let arr =
+    Array.make_matrix n n (n * n)
+    (* path probably(?) cannot be larger than number of nodes, since all edges are bi-directional *)
   in
-  let adj' =
-    List.fold_left
-      (fun acc (v : V.t) ->
-        let key = VM.find v.name keys in
-        let valves = List.map (fun n -> VM.find n keys) v.tunnels in
-        IM.add key (v.strength, valves) acc )
-      IM.empty valves
+  IM.iter
+    (fun i (v : V.t) -> v.conns |> List.iter (fun j -> arr.(i).(j) <- 1))
+    nodes ;
+  for z = 0 to n - 1 do
+    for y = 0 to n - 1 do
+      for x = 0 to n - 1 do
+        arr.(y).(x) <- Int.min arr.(y).(x) (arr.(y).(z) + arr.(z).(x))
+      done
+    done
+  done ;
+  arr
+
+let pp l =
+  let res = l |> List.map Int.to_string |> String.concat ", " in
+  Printf.sprintf "[%s]" res
+
+let single l =
+  Seq.init (List.length l) (fun i ->
+      let first, second = List.take_drop i l in
+      let chosen, tl = List.hd_tl second in
+      (chosen, first @ tl) )
+
+let dfs_cache = Hashtbl.create 10
+
+let dfs nodes fw start rem t =
+  let get k = Hashtbl.get dfs_cache k in
+  let set k v = Hashtbl.add dfs_cache k v in
+  let rec aux curr rem t =
+    let k = (curr, pp rem, t) in
+    match get k with
+    | Some c ->
+        c
+    | _ ->
+        let paths = single rem in
+        let res =
+          paths
+          |> Seq.filter (fun (pt, _) ->
+                 let d = fw.(curr).(pt) in
+                 d <= t )
+          |> Seq.fold_left
+               (fun acc (pt, rem') ->
+                 let d = fw.(curr).(pt) in
+                 let V.{flow; _} = IM.find pt nodes in
+                 let t' = t - d - 1 in
+                 let flow' = (flow * t') + aux pt rem' t' in
+                 Int.max acc flow' )
+               0
+        in
+        set k res ; res
   in
-  let best = Hashtbl.create (List.length valves) in
-  let rec aux t states =
-    if t >= timelimit then states
-    else
-      (* let _ = Printf.printf "@%d : %d\n" t (List.length states) in *)
-      let _ = flush_all () in
-      let states' =
-        List.fold_left
-          (fun acc (loc, is_open, pres) ->
-            let k = (loc, is_open) in
-            let best_pres = Hashtbl.get_or best k ~default:(-1) in
-            if pres <= best_pres then acc
-            else
-              let strength, nearby = IM.find loc adj' in
-              Hashtbl.add best k pres ;
-              let acc =
-                if loc land is_open = 0 && strength > 0 then
-                  (loc, is_open lor loc, pres + (strength * (timelimit - t)))
-                  :: acc
-                else acc
-              in
-              let acc =
-                List.fold_left
-                  (fun acc loc' ->
-                    let k = (loc', is_open) in
-                    let pres' = Hashtbl.get_or best k ~default:(-1) in
-                    if pres <= pres' then acc else (loc', is_open, pres) :: acc
-                    )
-                  acc nearby
-              in
-              acc )
-          [] states
-      in
-      aux (t + 1) states'
+  aux start rem t
+
+let part1 vm sp start =
+  let nz =
+    IM.fold (fun i (v : V.t) acc -> if v.flow > 0 then i :: acc else acc) vm []
   in
-  aux 1 [(VM.find "AA" keys, 0, 0)]
-  |> List.fold_left
-       (fun acc (_, _, pressure) -> if pressure > acc then pressure else acc)
-       0
+  dfs vm sp start nz 30
+
+let dfs' nodes fw start nz t =
+  let cache' = Hashtbl.create 10 in
+  let get k = Hashtbl.get cache' k in
+  let set k v = Hashtbl.add cache' k v in
+  let rec aux curr rem t =
+    let k = (curr, rem, t) in
+    match get k with
+    | Some c ->
+        c
+    | _ ->
+        let paths = single rem in
+        let res = dfs nodes fw start rem 26 in
+        let res =
+          paths
+          |> Seq.filter (fun (pt, _) ->
+                 let d = fw.(curr).(pt) in
+                 d <= t )
+          |> Seq.fold_left
+               (fun acc (pt, rem') ->
+                 let open V in
+                 let d = fw.(curr).(pt) in
+                 let {flow; _} = IM.find pt nodes in
+                 let t' = t - d - 1 in
+                 let flow' = (flow * t') + aux pt rem' t' in
+                 Int.max acc flow' )
+               res
+        in
+        set k res ; res
+  in
+  aux start nz t
+
+let part2 vm sp start =
+  let nz =
+    IM.fold (fun i (v : V.t) acc -> if v.flow > 0 then i :: acc else acc) vm []
+  in
+  dfs' vm sp start nz 26
 
 let _ =
-  let _ = part1 input in
-  Printf.printf "part1=%d;part2=" (part1 input)
+  let vm = parse input in
+  let sp = floyd_warshall vm in
+  let start, _ =
+    vm |> IM.filter (fun _ V.{name; _} -> String.equal name "AA") |> IM.choose
+  in
+  Printf.printf "part1=%d;part2=%d" (part1 vm sp start) (part2 vm sp start)
