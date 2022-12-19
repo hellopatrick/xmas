@@ -75,12 +75,13 @@ module State = struct
                   ; obsidian= t'.obsidian - bp.geode_obsidian
                   ; geode_robots= t'.geode_robots + 1 } ]
               else
-                [ (if t.ore < 6 then Some t' else None)
-                ; ( if t.ore >= bp.ore_ore then
+                [ ( if t.ore >= bp.obsidian_ore && t.clay >= bp.obsidian_clay
+                  then
                     Some
                       { t' with
-                        ore= t'.ore - bp.ore_ore
-                      ; ore_robots= t'.ore_robots + 1 }
+                        ore= t'.ore - bp.obsidian_ore
+                      ; clay= t'.clay - bp.obsidian_clay
+                      ; obsidian_robots= t'.obsidian_robots + 1 }
                   else None )
                 ; ( if t.ore >= bp.clay_ore then
                     Some
@@ -88,14 +89,13 @@ module State = struct
                         ore= t'.ore - bp.clay_ore
                       ; clay_robots= t'.clay_robots + 1 }
                   else None )
-                ; ( if t.ore >= bp.obsidian_ore && t.clay >= bp.obsidian_clay
-                  then
+                ; ( if t.ore >= bp.ore_ore then
                     Some
                       { t' with
-                        ore= t'.ore - bp.obsidian_ore
-                      ; clay= t'.clay - bp.obsidian_clay
-                      ; obsidian_robots= t'.obsidian_robots + 1 }
-                  else None ) ]
+                        ore= t'.ore - bp.ore_ore
+                      ; ore_robots= t'.ore_robots + 1 }
+                  else None )
+                ; (if t.ore < 6 then Some t' else None) ]
                 |> List.filter_map Fun.id
             in
             aux (res @ q') m'
