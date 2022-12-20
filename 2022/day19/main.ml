@@ -10,6 +10,9 @@ module Blueprint = struct
     ; geode_ore: int
     ; geode_obsidian: int }
 
+  let max_ore t =
+    max t.ore_ore (max t.clay_ore (max t.obsidian_ore t.geode_ore))
+
   let pp t =
     Printf.printf "%d %d %d (%d,%d) (%d,%d)\n" t.num t.ore_ore t.clay_ore
       t.obsidian_ore t.obsidian_clay t.geode_ore t.geode_obsidian
@@ -75,7 +78,9 @@ module State = struct
                   ; obsidian= t'.obsidian - bp.geode_obsidian
                   ; geode_robots= t'.geode_robots + 1 } ]
               else
-                [ ( if t.ore >= bp.obsidian_ore && t.clay >= bp.obsidian_clay
+                [ ( if
+                    t.ore >= bp.obsidian_ore && t.clay >= bp.obsidian_clay
+                    && t.obsidian_robots < bp.geode_obsidian
                   then
                     Some
                       { t' with
@@ -83,13 +88,15 @@ module State = struct
                       ; clay= t'.clay - bp.obsidian_clay
                       ; obsidian_robots= t'.obsidian_robots + 1 }
                   else None )
-                ; ( if t.ore >= bp.clay_ore then
+                ; ( if t.ore >= bp.clay_ore && t.clay_robots < bp.obsidian_clay
+                  then
                     Some
                       { t' with
                         ore= t'.ore - bp.clay_ore
                       ; clay_robots= t'.clay_robots + 1 }
                   else None )
-                ; ( if t.ore >= bp.ore_ore then
+                ; ( if t.ore >= bp.ore_ore && t.ore_robots < Blueprint.max_ore bp
+                  then
                     Some
                       { t' with
                         ore= t'.ore - bp.ore_ore
