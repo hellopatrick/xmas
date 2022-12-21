@@ -72,9 +72,7 @@ let eval m =
   in
   aux "root"
 
-let part1 input =
-  let monkeys = parse input in
-  eval monkeys
+let part1 input = input |> parse |> eval
 
 let part2 input =
   let m =
