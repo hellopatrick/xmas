@@ -1,10 +1,24 @@
 open Containers
 module M = Map.Make (String)
 
-type op = Add | Sub | Mul | Div | Cmp
+module Op = struct
+  type t = Add | Sub | Mul | Div | Cmp
+
+  let eval a b = function
+    | Add ->
+        a + b
+    | Sub ->
+        a - b
+    | Mul ->
+        a * b
+    | Div ->
+        a / b
+    | Cmp ->
+        Int.compare a b
+end
 
 module Monkey = struct
-  type t = Op of op * string * string | Val of int
+  type t = Op of Op.t * string * string | Val of int
 end
 
 module Parser = struct
@@ -62,27 +76,9 @@ let eval m =
         let v =
           match M.get n m with
           | Some (Val v) ->
-              (0, 0, v)
-          | Some (Op (Add, a, b)) ->
-              let _, _, av = aux a in
-              let _, _, bv = aux b in
-              (av, bv, av + bv)
-          | Some (Op (Sub, a, b)) ->
-              let _, _, av = aux a in
-              let _, _, bv = aux b in
-              (av, bv, av - bv)
-          | Some (Op (Mul, a, b)) ->
-              let _, _, av = aux a in
-              let _, _, bv = aux b in
-              (av, bv, av * bv)
-          | Some (Op (Div, a, b)) ->
-              let _, _, av = aux a in
-              let _, _, bv = aux b in
-              (av, bv, av / bv)
-          | Some (Op (Cmp, a, b)) ->
-              let _, _, av = aux a in
-              let _, _, bv = aux b in
-              (av, bv, Int.compare av bv)
+              v
+          | Some (Op (op, a, b)) ->
+              Op.eval (aux a) (aux b) op
           | _ ->
               failwith "impossible"
         in
@@ -92,23 +88,21 @@ let eval m =
 
 let part1 input =
   let monkeys = parse input in
-  let _, _, res = eval monkeys in
-  res
+  eval monkeys
 
 let part2 input =
-  let monkeys = parse input in
-  let monkeys =
+  let m =
     M.update "root"
       (function
         | Some (Monkey.Op (_, a, b)) -> Some (Monkey.Op (Cmp, a, b)) | o -> o )
-      monkeys
+      (parse input)
   in
   let rec aux l r dir =
     let i = (l + r) lsr 1 in
     if i = l || i = r then -1
     else
-      let m = M.add "humn" (Monkey.Val i) monkeys in
-      let _, _, res = eval m in
+      let m' = M.add "humn" (Monkey.Val i) m in
+      let res = eval m' in
       if res = 0 then i
       else if dir then if res < 0 then aux l i dir else aux i r dir
       else if res < 0 then aux i r dir
