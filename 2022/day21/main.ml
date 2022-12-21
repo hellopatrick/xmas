@@ -1,24 +1,10 @@
 open Containers
 module M = Map.Make (String)
 
-module Op = struct
-  type t = Add | Sub | Mul | Div | Cmp
-
-  let eval a b = function
-    | Add ->
-        a + b
-    | Sub ->
-        a - b
-    | Mul ->
-        a * b
-    | Div ->
-        a / b
-    | Cmp ->
-        Int.compare a b
-end
-
 module Monkey = struct
-  type t = Op of Op.t * string * string | Val of int
+  type op = int -> int -> int
+
+  type t = Op of op * string * string | Val of int
 end
 
 module Parser = struct
@@ -38,13 +24,13 @@ module Parser = struct
       (fun a b c ->
         match b with
         | "+" ->
-            Monkey.Op (Add, a, c)
+            Monkey.Op (Int.add, a, c)
         | "-" ->
-            Monkey.Op (Sub, a, c)
+            Monkey.Op (Int.sub, a, c)
         | "*" ->
-            Monkey.Op (Mul, a, c)
+            Monkey.Op (Int.mul, a, c)
         | "/" ->
-            Monkey.Op (Div, a, c)
+            Monkey.Op (Int.div, a, c)
         | _ ->
             failwith "impossible" )
       name op name
@@ -78,7 +64,7 @@ let eval m =
           | Some (Val v) ->
               v
           | Some (Op (op, a, b)) ->
-              Op.eval (aux a) (aux b) op
+              op (aux a) (aux b)
           | _ ->
               failwith "impossible"
         in
@@ -94,7 +80,10 @@ let part2 input =
   let m =
     M.update "root"
       (function
-        | Some (Monkey.Op (_, a, b)) -> Some (Monkey.Op (Cmp, a, b)) | o -> o )
+        | Some (Monkey.Op (_, a, b)) ->
+            Some (Monkey.Op (Int.compare, a, b))
+        | o ->
+            o )
       (parse input)
   in
   let rec aux l r dir =
