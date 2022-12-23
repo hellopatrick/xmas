@@ -76,28 +76,31 @@ let pp m =
   print_endline (String.init (x1 - x0 + 2) (fun _ -> '-'))
 
 let step m i =
-  let proposed =
+  let counts, proposed =
     M.fold
-      (fun c _ acc ->
+      (fun c _ (counts, proposed) ->
         match propose m c i with
         | Some c' ->
-            M.update c' (function Some v -> Some (v + 1) | None -> Some 1) acc
+            ( M.update c'
+                (function Some v -> Some (v + 1) | None -> Some 1)
+                counts
+            , M.add c c' proposed )
         | None ->
-            acc )
-      m M.empty
+            (counts, proposed) )
+      m (M.empty, M.empty)
   in
   let m' =
     M.fold
       (fun c _ acc ->
-        match propose m c i with
+        match M.get c proposed with
         | Some c' ->
-            if M.find c' proposed = 1 then acc |> M.remove c |> M.add c' true
+            if M.find c' counts = 1 then acc |> M.remove c |> M.add c' true
             else acc
         | None ->
             acc )
       m m
   in
-  (m', proposed)
+  (m', counts)
 
 let run m n =
   let rec aux m i =
