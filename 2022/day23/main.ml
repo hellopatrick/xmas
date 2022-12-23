@@ -100,7 +100,7 @@ let step m i =
             acc )
       m m
   in
-  (m', counts)
+  (m', proposed)
 
 let run m n =
   let rec aux m i =
@@ -118,8 +118,8 @@ let part1 m =
 
 let part2 m =
   let rec aux m i =
-    let m', proposed = step m i in
-    if M.exists (fun _ i -> i = 1) proposed then aux m' (i + 1) else i
+    let m', mvmt = step m i in
+    if M.is_empty mvmt then i else aux m' (i + 1)
   in
   1 + aux m 0
 
