@@ -4,8 +4,6 @@ module C = Xmas.Coordinate
 module Space = struct
   type t = Wall | North | South | East | West
 
-  let equal t s = CCEqual.physical t s
-
   let dir = function
     | Wall ->
         (0, 0)
@@ -17,27 +15,6 @@ module Space = struct
         (1, 0)
     | West ->
         (-1, 0)
-
-  let to_char t =
-    match t with
-    | Wall ->
-        '#'
-    | West ->
-        '<'
-    | East ->
-        '>'
-    | North ->
-        '^'
-    | South ->
-        'v'
-
-  let pps = function
-    | [] ->
-        print_char '.'
-    | hd :: [] ->
-        print_char @@ to_char hd
-    | l ->
-        print_int (List.length l)
 end
 
 module M = struct
@@ -73,15 +50,6 @@ module M = struct
         else if mem (x, y) t then None
         else Some (x, y) )
       dps
-
-  let pp m =
-    let (x0, y0), (x1, y1) = bounds m in
-    for y = y0 to y1 do
-      for x = x0 to x1 do
-        match get (x, y) m with Some c -> Space.pps c | _ -> print_char '.'
-      done ;
-      print_newline ()
-    done
 end
 
 let input = IO.read_lines_l stdin
