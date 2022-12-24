@@ -62,7 +62,7 @@ module M = struct
     |> Seq.filter_map (fun x -> if mem (x, y) t then None else Some (x, y))
     |> Seq.head_exn
 
-  let safe (wx, wy) (wx', wy') (sx, sy) (gx, gy) pt t =
+  let safe ((wx, wy), (wx', wy')) (sx, sy) (gx, gy) pt t =
     let dps = [(0, 0); (-1, 0); (1, 0); (0, 1); (0, -1)] in
     List.filter_map
       (fun dp ->
@@ -107,7 +107,7 @@ let parse input =
         acc line )
     M.empty input
 
-let run (wx, wy) (wx', wy') m =
+let run ((wx, wy), (wx', wy')) m =
   M.fold
     (fun (x, y) pieces acc ->
       List.fold_left
@@ -141,14 +141,13 @@ let run (wx, wy) (wx', wy') m =
         acc pieces )
     m M.empty
 
-let bfs m start goal =
+let bfs m bounds start goal =
   let seen = Hashtbl.create 1_000 in
   let m_cache = Hashtbl.create 1_000 in
-  let (wx, wy), (wx', wy') = M.bounds m in
-  let run = run (wx, wy) (wx', wy') in
-  let safe = M.safe (wx, wy) (wx', wy') start goal in
   let q = Queue.create () in
-  let _ = Queue.push (0, m, start) q in
+  let run = run bounds in
+  let safe = M.safe bounds start goal in
+  Queue.push (0, m, start) q ;
   let rec aux () =
     if Queue.is_empty q then failwith "never-reached-goal"
     else
@@ -167,18 +166,20 @@ let bfs m start goal =
 
 let part1 input =
   let m = parse input in
+  let bounds = M.bounds m in
   let start = M.start m in
   let goal = M.goal m in
-  let t, _ = bfs m start goal in
+  let t, _ = bfs m bounds start goal in
   t
 
 let part2 input =
   let m = parse input in
+  let bounds = M.bounds m in
   let start = M.start m in
   let goal = M.goal m in
-  let t0, m' = bfs m start goal in
-  let t1, m' = bfs m' goal start in
-  let t2, _ = bfs m' start goal in
+  let t0, m' = bfs m bounds start goal in
+  let t1, m' = bfs m' bounds goal start in
+  let t2, _ = bfs m' bounds start goal in
   t0 + t1 + t2
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)
