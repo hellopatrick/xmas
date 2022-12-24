@@ -157,7 +157,7 @@ let bfs m start goal =
       if Hashtbl.mem seen (t, pt) then aux q
       else if C.equal pt goal then (t, m)
       else
-        let m' = Hashtbl.get_or_add m_cache ~f:(fun _t -> run m) ~k:t in
+        let m' = Hashtbl.get_or_add m_cache ~f:(fun _ -> run m) ~k:t in
         let pts =
           Hashtbl.get_or_add pt_cache ~f:(fun (_, pt) -> safe pt m') ~k:(t, pt)
         in
