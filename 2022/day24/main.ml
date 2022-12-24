@@ -144,28 +144,26 @@ let run (wx, wy) (wx', wy') m =
 let bfs m start goal =
   let seen = Hashtbl.create 1_000 in
   let m_cache = Hashtbl.create 1_000 in
-  let pt_cache = Hashtbl.create 1_000 in
   let (wx, wy), (wx', wy') = M.bounds m in
   let run = run (wx, wy) (wx', wy') in
   let safe = M.safe (wx, wy) (wx', wy') start goal in
   let q = Queue.create () in
   let _ = Queue.push (0, m, start) q in
-  let rec aux q =
+  let rec aux () =
     if Queue.is_empty q then failwith "never-reached-goal"
     else
       let t, m, pt = Queue.pop q in
-      if Hashtbl.mem seen (t, pt) then aux q
-      else if C.equal pt goal then (t, m)
+      if C.equal pt goal then (t, m)
+      else if Hashtbl.mem seen (t, pt) then aux ()
       else
         let m' = Hashtbl.get_or_add m_cache ~f:(fun _ -> run m) ~k:t in
-        let pts =
-          Hashtbl.get_or_add pt_cache ~f:(fun (_, pt) -> safe pt m') ~k:(t, pt)
-        in
-        List.iter (fun pt -> Queue.push (t + 1, m', pt) q) pts ;
+        safe pt m' |> Seq.of_list
+        |> Seq.map (fun pt -> (t + 1, m', pt))
+        |> Queue.add_seq q ;
         Hashtbl.add seen (t, pt) true ;
-        aux q
+        aux ()
   in
-  aux q
+  aux ()
 
 let part1 input =
   let m = parse input in
