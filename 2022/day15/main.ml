@@ -16,7 +16,6 @@ module Range = struct
     else None
 
   let length (t0, t1) = t1 - t0 + 1
-
   let clamp (c0, c1) (t0, t1) = (Int.max c0 t0, Int.min c1 t1)
 
   let compare (c0, c1) (t0, t1) =
@@ -48,9 +47,8 @@ let find_taken_ranges sensor_ranges ty =
         in
         match res with
         | a :: b :: tl -> (
-          match Range.merge a b with Some r -> r :: tl | _ -> res )
-        | _ ->
-            res )
+            match Range.merge a b with Some r -> r :: tl | _ -> res)
+        | _ -> res)
     sensor_ranges []
 
 let part1 sensor_beacons sensor_ranges ty =
@@ -80,12 +78,9 @@ let part2 sensor_ranges max =
         let front = List.hd ranges in
         let x =
           match front with
-          | 0, a ->
-              a + 1
-          | a, b when b = max ->
-              a - 1
-          | _, b ->
-              b + 1
+          | 0, a -> a + 1
+          | a, b when b = max -> a - 1
+          | _, b -> b + 1
         in
         (4000000 * x) + ty
       else aux (ty + 1)

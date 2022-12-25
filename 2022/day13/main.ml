@@ -5,34 +5,25 @@ module Packet = struct
 
   let rec compare t s =
     match (t, s) with
-    | Num a, Num b ->
-        Int.compare a b
-    | Lst a, Lst b ->
-        compare_lst a b
-    | Num _, Lst _ ->
-        compare (Lst [t]) s
-    | Lst _, Num _ ->
-        compare t (Lst [s])
+    | Num a, Num b -> Int.compare a b
+    | Lst a, Lst b -> compare_lst a b
+    | Num _, Lst _ -> compare (Lst [ t ]) s
+    | Lst _, Num _ -> compare t (Lst [ s ])
 
   and compare_lst a b =
     match (a, b) with
-    | [], [] ->
-        0
-    | [], _ ->
-        -1
-    | _, [] ->
-        1
+    | [], [] -> 0
+    | [], _ -> -1
+    | _, [] -> 1
     | hda :: tla, hdb :: tlb -> (
-      match compare hda hdb with 0 -> compare_lst tla tlb | res -> res )
+        match compare hda hdb with 0 -> compare_lst tla tlb | res -> res)
 
   let equals t s = match compare t s with 0 -> true | _ -> false
 
   let rec pp t =
     match t with
-    | Num i ->
-        Printf.sprintf "%d" i
-    | Lst t ->
-        Printf.sprintf "[%s]" (List.map pp t |> String.concat ",")
+    | Num i -> Printf.sprintf "%d" i
+    | Lst t -> Printf.sprintf "[%s]" (List.map pp t |> String.concat ",")
 end
 
 module PP = struct
@@ -48,7 +39,7 @@ module PP = struct
     let to_lst l = Lst l in
     fix (fun packet ->
         let lst = packet >>| to_lst in
-        lsb *> sep_by comma (num <|> lst) <* rsb )
+        lsb *> sep_by comma (num <|> lst) <* rsb)
     >>| to_lst
 
   let parse s = s |> parse_string ~consume:All pkt |> Result.get_or_failwith
@@ -56,7 +47,7 @@ end
 
 let part1 packets =
   List.chunks 2 packets
-  |> List.map (function [a; b] -> (a, b) | _ -> failwith "only pairs.")
+  |> List.map (function [ a; b ] -> (a, b) | _ -> failwith "only pairs.")
   |> List.foldi
        (fun acc i (a, b) -> if Packet.compare a b < 0 then acc + i + 1 else acc)
        0

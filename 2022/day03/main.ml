@@ -10,20 +10,17 @@ end
 
 let priority c =
   match c with
-  | 'a' .. 'z' ->
-      -96 + Char.to_int c
-  | 'A' .. 'Z' ->
-      -38 + Char.to_int c
-  | _ ->
-      failwith "unsupported char"
+  | 'a' .. 'z' -> -96 + Char.to_int c
+  | 'A' .. 'Z' -> -38 + Char.to_int c
+  | _ -> failwith "unsupported char"
 
 let part1 input =
   List.map
     (fun str ->
       let len = String.length str in
       let len = len / 2 in
-      ( CharSet.of_string (String.sub str 0 len)
-      , CharSet.of_string (String.sub str len len) ) )
+      ( CharSet.of_string (String.sub str 0 len),
+        CharSet.of_string (String.sub str len len) ))
     input
   |> List.map (fun (first, second) -> CharSet.inter first second)
   |> List.fold_left (fun acc c -> acc + priority (CharSet.choose c)) 0
@@ -34,8 +31,7 @@ let part2 input =
     | a :: b :: c :: tl ->
         let cc = CharSet.inter a b |> CharSet.inter c |> CharSet.choose in
         aux tl (cc :: common)
-    | _ ->
-        common
+    | _ -> common
   in
   let i = List.map CharSet.of_string input in
   aux i [] |> List.fold_left (fun acc c -> acc + priority c) 0

@@ -13,11 +13,8 @@ module P = struct
   open Xmas.Parsing
 
   let comma = char ','
-
   let coord = lift3 (fun x _ y -> (x, y)) number comma number
-
   let arrow = string " -> "
-
   let coord_list = sep_by arrow coord
 
   let parse line =
@@ -47,8 +44,7 @@ let parse input =
     | (sx, sy) :: (fx, fy) :: tl ->
         let map' = draw_wall (sx, sy) (fx, fy) map in
         draw map' ((fx, fy) :: tl)
-    | _ ->
-        map
+    | _ -> map
   in
   let lines = List.map P.parse input in
   List.fold_left draw M.empty lines
@@ -68,19 +64,14 @@ let run ?(floor = Int.max_int) ?(void = Int.max_int) m =
     if y > void then (m, None)
     else
       match next_pos ~floor (x, y) m with
-      | Some c ->
-          track c m
-      | None ->
-          (M.add (x, y) B.Sand m, Some (x, y))
+      | Some c -> track c m
+      | None -> (M.add (x, y) B.Sand m, Some (x, y))
   in
   let rec aux s m =
     match track s m with
-    | m', Some c when C.equal c s ->
-        m'
-    | m', Some _ ->
-        aux s m'
-    | m', None ->
-        m'
+    | m', Some c when C.equal c s -> m'
+    | m', Some _ -> aux s m'
+    | m', None -> m'
   in
   aux (500, 0) m
 

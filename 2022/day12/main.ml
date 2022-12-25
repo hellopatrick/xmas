@@ -10,37 +10,32 @@ let starts c m =
   m |> M.filter (fun _ (h, _) -> Char.equal h c) |> M.keys |> List.of_iter
 
 let goal m = m |> M.filter (fun _ (h, _) -> Char.equal h 'E') |> M.choose |> fst
-
-let neighbors (x, y) = [(x - 1, y); (x + 1, y); (x, y - 1); (x, y + 1)]
+let neighbors (x, y) = [ (x - 1, y); (x + 1, y); (x, y - 1); (x, y + 1) ]
 
 let height = function
-  | 'S' ->
-      Char.code 'a'
-  | 'E' ->
-      Char.code 'z'
-  | c ->
-      Char.code c
+  | 'S' -> Char.code 'a'
+  | 'E' -> Char.code 'z'
+  | c -> Char.code c
 
 let parse i =
   let me =
     List.foldi
       (fun acc y line ->
-        String.foldi (fun acc x c -> M.add (x, y) c acc) acc line )
+        String.foldi (fun acc x c -> M.add (x, y) c acc) acc line)
       M.empty i
   in
   M.mapi
     (fun c v ->
       let h = height v in
-      ( v
-      , List.filter
+      ( v,
+        List.filter
           (fun c' ->
             match M.get c' me with
-            | None ->
-                false
+            | None -> false
             | Some h' ->
                 let dh = height h' - h in
-                dh <= 1 )
-          (neighbors c) ) )
+                dh <= 1)
+          (neighbors c) ))
     me
 
 let get ?(def = "not-found") a = Option.get_exn_or def a
@@ -65,11 +60,10 @@ let solve m s e =
             in
             let _ = Queue.add_seq q (List.to_seq adj) in
             aux ds'
-        | None ->
-            failwith "impossible"
+        | None -> failwith "impossible"
   in
   let _ = Queue.add s q in
-  aux (M.of_list [(s, 0)])
+  aux (M.of_list [ (s, 0) ])
 
 let part1 m =
   let start = starts 'S' m |> List.hd in
@@ -82,7 +76,7 @@ let part2 m =
   List.fold_left
     (fun acc start ->
       let steps = solve m start goal in
-      match steps with None -> acc | Some s -> Int.min acc s )
+      match steps with None -> acc | Some s -> Int.min acc s)
     Int.max_int ss
 
 let _ =

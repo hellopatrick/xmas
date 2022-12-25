@@ -19,12 +19,11 @@ let history input =
     List.fold_left
       (fun (x, hist) cmd ->
         match cmd with
-        | Cmd.Noop ->
-            (x, x :: hist)
+        | Cmd.Noop -> (x, x :: hist)
         | Cmd.AddX dx ->
             let x' = x + dx in
-            (x', x' :: x :: hist) )
-      (1, [1; 1])
+            (x', x' :: x :: hist))
+      (1, [ 1; 1 ])
       cmds
   in
   List.rev history

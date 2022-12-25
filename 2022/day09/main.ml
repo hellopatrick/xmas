@@ -7,16 +7,11 @@ let parse input =
     (fun line ->
       Scanf.sscanf line "%c %d" (fun dir dist ->
           match dir with
-          | 'U' ->
-              List.init dist (fun _ -> (0, 1))
-          | 'D' ->
-              List.init dist (fun _ -> (0, -1))
-          | 'L' ->
-              List.init dist (fun _ -> (-1, 0))
-          | 'R' ->
-              List.init dist (fun _ -> (1, 0))
-          | _ ->
-              failwith "invalid direction." ) )
+          | 'U' -> List.init dist (fun _ -> (0, 1))
+          | 'D' -> List.init dist (fun _ -> (0, -1))
+          | 'L' -> List.init dist (fun _ -> (-1, 0))
+          | 'R' -> List.init dist (fun _ -> (1, 0))
+          | _ -> failwith "invalid direction."))
     input
   |> List.flatten
 
@@ -47,10 +42,10 @@ let solve input len =
           List.fold_left
             (fun (h, acc) t ->
               let t' = C.follow h t in
-              (t', t' :: acc) )
+              (t', t' :: acc))
             (h', []) r
         in
-        (h', List.rev r', V.add t' v) )
+        (h', List.rev r', V.add t' v))
       ((0, 0), rope, V.singleton (0, 0))
       steps
   in

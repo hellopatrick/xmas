@@ -6,21 +6,21 @@ module O = struct
   let handle i = function Add j -> i + j | Mult j -> i * j | Square -> i * i
 end
 
-type monkey =
-  { name: int
-  ; items: int list
-  ; op: O.t
-  ; test: int
-  ; if_true: int
-  ; if_false: int
-  ; seen: int }
+type monkey = {
+  name : int;
+  items : int list;
+  op : O.t;
+  test : int;
+  if_true : int;
+  if_false : int;
+  seen : int;
+}
 
 module P = struct
   open Angstrom
   open Xmas.Parsing
 
   let name = whitespace *> string "Monkey " *> number <* chomp_eol
-
   let comma = string ", "
 
   let items =
@@ -41,7 +41,6 @@ module P = struct
     >>| Fun.const O.Square <* chomp_eol
 
   let op = add <|> square <|> mult
-
   let test = whitespace *> string "Test: divisible by " *> number <* chomp_eol
 
   let if_true =
@@ -52,7 +51,7 @@ module P = struct
 
   let monkey =
     (fun name items op test if_true if_false ->
-      {name; items; op; test; if_true; if_false; seen= 0} )
+      { name; items; op; test; if_true; if_false; seen = 0 })
     <$> name <*> items <*> op <*> test <*> if_true <*> if_false
 
   let parse input =
@@ -68,11 +67,11 @@ let solve monkeys rounds wd =
           let i' = wd @@ O.handle i m.op in
           let dest = if i' mod m.test = 0 then m.if_true else m.if_false in
           let d = s.(dest) in
-          s.(dest) <- {d with items= i' :: d.items} ;
-          acc + 1 )
+          s.(dest) <- { d with items = i' :: d.items };
+          acc + 1)
         0 m.items
     in
-    s.(m.name) <- {m with seen= m.seen + len; items= []}
+    s.(m.name) <- { m with seen = m.seen + len; items = [] }
   in
   let rec aux i state =
     if i > rounds then state
@@ -85,7 +84,7 @@ let solve monkeys rounds wd =
        (fun (m1, m2) n ->
          if n.seen > m1 then (n.seen, m1)
          else if n.seen > m2 then (m1, n.seen)
-         else (m1, m2) )
+         else (m1, m2))
        (0, 0)
   |> fun (a, b) -> a * b
 

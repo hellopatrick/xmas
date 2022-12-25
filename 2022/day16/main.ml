@@ -1,7 +1,7 @@
 open Containers
 
 module V = struct
-  type t = {flow: int; conns: int list}
+  type t = { flow : int; conns : int list }
 end
 
 module SM = Map.Make (String)
@@ -12,15 +12,10 @@ module P = struct
   open Xmas.Parsing
 
   let name = string "Valve " *> take 2
-
   let rate = string " has flow rate=" *> number
-
   let comma = string ", "
-
   let tunnel = string "; tunnel leads to valve "
-
   let tunnels = string "; tunnels lead to valves "
-
   let list_of_tunnels = (tunnel <|> tunnels) *> sep_by comma (take 2)
 
   let valve =
@@ -46,8 +41,8 @@ let parse input =
     (fun acc i (_, flow, conns) ->
       let open V in
       let conns = List.map (fun conn -> SM.find conn idxs) conns in
-      let v = {flow; conns} in
-      IM.add i v acc )
+      let v = { flow; conns } in
+      IM.add i v acc)
     IM.empty data
 
 let floyd_warshall nodes =
@@ -55,14 +50,14 @@ let floyd_warshall nodes =
   let arr = Array.make_matrix n n n in
   IM.iter
     (fun x (v : V.t) -> v.conns |> List.iter (fun y -> arr.(y).(x) <- 1))
-    nodes ;
+    nodes;
   for z = 0 to n - 1 do
     for y = 0 to n - 1 do
       for x = 0 to n - 1 do
         arr.(y).(x) <- Int.min arr.(y).(x) (arr.(y).(z) + arr.(z).(x))
       done
     done
-  done ;
+  done;
   arr
 
 let pp l =
@@ -73,7 +68,7 @@ let single l =
   Seq.init (List.length l) (fun i ->
       let first, second = List.take_drop i l in
       let chosen, tl = List.hd_tl second in
-      (chosen, first @ tl) )
+      (chosen, first @ tl))
 
 let cache = Hashtbl.create 10
 
@@ -83,8 +78,7 @@ let dfs nodes fw start rem t =
   let rec aux curr rem t =
     let k = (curr, pp rem, t) in
     match get k with
-    | Some c ->
-        c
+    | Some c -> c
     | _ ->
         let paths = single rem in
         let res =
@@ -93,13 +87,14 @@ let dfs nodes fw start rem t =
           |> Seq.fold_left
                (fun acc (pt, rem') ->
                  let d = fw.(curr).(pt) in
-                 let V.{flow; _} = IM.find pt nodes in
+                 let V.{ flow; _ } = IM.find pt nodes in
                  let t' = t - d - 1 in
                  let flow' = (flow * t') + aux pt rem' t' in
-                 Int.max acc flow' )
+                 Int.max acc flow')
                0
         in
-        set k res ; res
+        set k res;
+        res
   in
   aux start rem t
 
@@ -117,8 +112,7 @@ let dfs' nodes fw start nz t =
   let rec aux curr rem t =
     let k = (curr, rem, t) in
     match get k with
-    | Some c ->
-        c
+    | Some c -> c
     | _ ->
         let res =
           single rem
@@ -126,13 +120,14 @@ let dfs' nodes fw start nz t =
           |> Seq.fold_left
                (fun acc (pt, rem') ->
                  let d = fw.(curr).(pt) in
-                 let V.{flow; _} = IM.find pt nodes in
+                 let V.{ flow; _ } = IM.find pt nodes in
                  let t' = t - d - 1 in
                  let flow' = (flow * t') + aux pt rem' t' in
-                 Int.max acc flow' )
+                 Int.max acc flow')
                (dfs nodes fw start rem 26)
         in
-        set k res ; res
+        set k res;
+        res
   in
   aux start nz t
 

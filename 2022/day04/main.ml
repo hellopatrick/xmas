@@ -3,12 +3,10 @@ open Containers
 let input = IO.(read_lines_l stdin)
 
 module Range = struct
-  type t = {first: int; last: int}
+  type t = { first : int; last : int }
 
-  let parse b = Scanf.bscanf b "%i-%i" (fun first last -> {first; last})
-
+  let parse b = Scanf.bscanf b "%i-%i" (fun first last -> { first; last })
   let includes t s = t.first <= s.first && t.last >= s.last
-
   let overlap t s = t.first <= s.last && t.last >= s.first
 end
 
@@ -19,7 +17,7 @@ let part1 input =
   input |> List.map parse
   |> List.fold_left
        (fun acc (a, b) ->
-         acc + Bool.to_int (Range.includes a b || Range.includes b a) )
+         acc + Bool.to_int (Range.includes a b || Range.includes b a))
        0
 
 let part2 input =

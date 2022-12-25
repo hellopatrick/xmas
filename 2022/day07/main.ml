@@ -6,19 +6,14 @@ let parse lines =
   let hm = Hashtbl.create 10 in
   let rec aux lines path =
     match lines with
-    | [] ->
-        hm
-    | "$ ls" :: tl ->
-        aux tl path
-    | line :: tl when String.prefix line ~pre:"dir" ->
-        aux tl path
+    | [] -> hm
+    | "$ ls" :: tl -> aux tl path
+    | line :: tl when String.prefix line ~pre:"dir" -> aux tl path
     | line :: tl when String.prefix line ~pre:"$ cd" -> (
         let name = Scanf.sscanf line "$ cd %s" Fun.id in
         match name with
-        | ".." ->
-            aux tl (List.tl path)
-        | _ ->
-            aux tl (name :: path) )
+        | ".." -> aux tl (List.tl path)
+        | _ -> aux tl (name :: path))
     | line :: tl ->
         let data, _ =
           Scanf.sscanf line "%d %s" (fun size name -> (size, name))
@@ -30,11 +25,10 @@ let parse lines =
               let _ =
                 Hashtbl.update hm
                   ~f:(fun _ b ->
-                    match b with None -> Some data | Some v -> Some (v + data)
-                    )
+                    match b with None -> Some data | Some v -> Some (v + data))
                   ~k
               in
-              k )
+              k)
             path ""
         in
         aux tl path

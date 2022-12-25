@@ -3,11 +3,11 @@ open Containers
 let input = IO.(read_lines_l stdin)
 
 module Move = struct
-  type t = {src: int; dst: int; amt: int}
+  type t = { src : int; dst : int; amt : int }
 
   let parse s =
     Scanf.sscanf s "move %d from %d to %d" (fun amt src dst ->
-        {src= src - 1; dst= dst - 1; amt} )
+        { src = src - 1; dst = dst - 1; amt })
 end
 
 let parse lines =
@@ -21,15 +21,14 @@ let parse lines =
 let solve_inplace f stack moves =
   let rec aux moves =
     match moves with
-    | [] ->
-        ()
+    | [] -> ()
     | mv :: tl ->
-        let Move.{src; dst; amt} = mv in
+        let Move.{ src; dst; amt } = mv in
         let s = stack.(src) in
         let d = stack.(dst) in
         let top, bot = List.take_drop amt s in
-        stack.(src) <- bot ;
-        stack.(dst) <- List.concat [f top; d] ;
+        stack.(src) <- bot;
+        stack.(dst) <- List.concat [ f top; d ];
         aux tl
   in
   let _ = aux moves in

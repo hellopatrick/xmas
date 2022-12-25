@@ -8,48 +8,46 @@ let parse input =
     (fun acc y line ->
       String.foldi
         (fun acc x c -> if Char.equal c '#' then M.add (x, y) true acc else acc)
-        acc line )
+        acc line)
     M.empty input
 
 let input = IO.read_lines_l stdin
 
 let north x y m =
-  let cs = [(x - 1, y - 1); (x, y - 1); (x + 1, y - 1)] in
+  let cs = [ (x - 1, y - 1); (x, y - 1); (x + 1, y - 1) ] in
   if List.count (fun c -> M.mem c m) cs = 0 then Some (x, y - 1) else None
 
 let south x y m =
-  let cs = [(x - 1, y + 1); (x, y + 1); (x + 1, y + 1)] in
+  let cs = [ (x - 1, y + 1); (x, y + 1); (x + 1, y + 1) ] in
   if List.count (fun c -> M.mem c m) cs = 0 then Some (x, y + 1) else None
 
 let west x y m =
-  let cs = [(x - 1, y - 1); (x - 1, y); (x - 1, y + 1)] in
+  let cs = [ (x - 1, y - 1); (x - 1, y); (x - 1, y + 1) ] in
   if List.count (fun c -> M.mem c m) cs = 0 then Some (x - 1, y) else None
 
 let east x y m =
-  let cs = [(x + 1, y - 1); (x + 1, y); (x + 1, y + 1)] in
+  let cs = [ (x + 1, y - 1); (x + 1, y); (x + 1, y + 1) ] in
   if List.count (fun c -> M.mem c m) cs = 0 then Some (x + 1, y) else None
 
 let choices n x y =
   match n mod 4 with
-  | 0 ->
-      [north x y; south x y; west x y; east x y]
-  | 1 ->
-      [south x y; west x y; east x y; north x y]
-  | 2 ->
-      [west x y; east x y; north x y; south x y]
-  | _ ->
-      [east x y; north x y; south x y; west x y]
+  | 0 -> [ north x y; south x y; west x y; east x y ]
+  | 1 -> [ south x y; west x y; east x y; north x y ]
+  | 2 -> [ west x y; east x y; north x y; south x y ]
+  | _ -> [ east x y; north x y; south x y; west x y ]
 
 let propose m (x, y) i =
   let any =
-    [ (x - 1, y - 1)
-    ; (x, y - 1)
-    ; (x + 1, y - 1)
-    ; (x - 1, y)
-    ; (x + 1, y)
-    ; (x - 1, y + 1)
-    ; (x, y + 1)
-    ; (x + 1, y + 1) ]
+    [
+      (x - 1, y - 1);
+      (x, y - 1);
+      (x + 1, y - 1);
+      (x - 1, y);
+      (x + 1, y);
+      (x - 1, y + 1);
+      (x, y + 1);
+      (x + 1, y + 1);
+    ]
   in
   if List.count (fun c -> M.mem c m) any = 0 then None
   else
@@ -61,7 +59,7 @@ let propose m (x, y) i =
 let bounds m =
   M.fold
     (fun (cx, cy) _ ((x, y), (x', y')) ->
-      ((min cx x, min cy y), (max cx x', max cy y')) )
+      ((min cx x, min cy y), (max cx x', max cy y')))
     m
     ((max_int, max_int), (min_int, min_int))
 
@@ -70,9 +68,9 @@ let pp m =
   for y = y0 to y1 do
     for x = x0 to x1 do
       if M.mem (x, y) m then print_char '#' else print_char '.'
-    done ;
+    done;
     print_newline ()
-  done ;
+  done;
   print_endline (String.init (x1 - x0 + 2) (fun _ -> '-'))
 
 let step m i =
@@ -83,10 +81,9 @@ let step m i =
         | Some c' ->
             ( M.update c'
                 (function Some v -> Some (v + 1) | None -> Some 1)
-                counts
-            , M.add c c' proposed )
-        | None ->
-            (counts, proposed) )
+                counts,
+              M.add c c' proposed )
+        | None -> (counts, proposed))
       m (M.empty, M.empty)
   in
   let m' =
@@ -96,8 +93,7 @@ let step m i =
         | Some c' ->
             if M.find c' counts = 1 then acc |> M.remove c |> M.add c' true
             else acc
-        | None ->
-            acc )
+        | None -> acc)
       m m
   in
   (m', proposed)

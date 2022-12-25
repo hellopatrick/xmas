@@ -4,12 +4,9 @@ module Step = struct
   type t = Forward of int | Left | Right
 
   let pp = function
-    | Left ->
-        "Left"
-    | Right ->
-        "Right"
-    | Forward i ->
-        Printf.sprintf "Go %d" i
+    | Left -> "Left"
+    | Right -> "Right"
+    | Forward i -> Printf.sprintf "Go %d" i
 end
 
 module Facing = struct
@@ -18,33 +15,24 @@ module Facing = struct
   let score = function Right -> 0 | Down -> 1 | Left -> 2 | Up -> 3
 
   let pp = function
-    | Up ->
-        "up"
-    | Down ->
-        "down"
-    | Left ->
-        "left"
-    | Right ->
-        "right"
+    | Up -> "up"
+    | Down -> "down"
+    | Left -> "left"
+    | Right -> "right"
 
   let rotate t by =
     match by with
     | Step.Left -> (
-      match t with Up -> Left | Left -> Down | Down -> Right | Right -> Up )
+        match t with Up -> Left | Left -> Down | Down -> Right | Right -> Up)
     | Step.Right -> (
-      match t with Up -> Right | Right -> Down | Down -> Left | Left -> Up )
-    | Step.Forward _ ->
-        t
+        match t with Up -> Right | Right -> Down | Down -> Left | Left -> Up)
+    | Step.Forward _ -> t
 
   let dir = function
-    | Up ->
-        (0, -1)
-    | Down ->
-        (0, 1)
-    | Left ->
-        (-1, 0)
-    | Right ->
-        (1, 0)
+    | Up -> (0, -1)
+    | Down -> (0, 1)
+    | Left -> (-1, 0)
+    | Right -> (1, 0)
 end
 
 module Parser = struct
@@ -52,15 +40,10 @@ module Parser = struct
   open Xmas.Parsing
 
   let forward = number >>| fun i -> Step.Forward i
-
   let left = char 'L' >>| fun _ -> Step.Left
-
   let right = char 'R' >>| fun _ -> Step.Right
-
   let step = forward <|> left <|> right
-
   let seq = many1 step <* end_of_line
-
   let parse str = parse_string ~consume:All seq str |> Result.get_or_failwith
 end
 
@@ -70,18 +53,12 @@ module Side = struct
   type side = A | B | C | D | E | F
 
   let pp = function
-    | A ->
-        "a"
-    | B ->
-        "b"
-    | C ->
-        "c"
-    | D ->
-        "d"
-    | E ->
-        "e"
-    | F ->
-        "f"
+    | A -> "a"
+    | B -> "b"
+    | C -> "c"
+    | D -> "d"
+    | E -> "e"
+    | F -> "f"
 end
 
 module M = struct
@@ -96,18 +73,12 @@ module M = struct
     else F
 
   let origin = function
-    | Side.A ->
-        ((50, 0), (99, 49))
-    | B ->
-        ((100, 0), (149, 49))
-    | C ->
-        ((50, 50), (99, 99))
-    | D ->
-        ((0, 100), (49, 149))
-    | E ->
-        ((50, 100), (99, 149))
-    | F ->
-        ((0, 150), (49, 199))
+    | Side.A -> ((50, 0), (99, 49))
+    | B -> ((100, 0), (149, 49))
+    | C -> ((50, 50), (99, 99))
+    | D -> ((0, 100), (49, 149))
+    | E -> ((50, 100), (99, 149))
+    | F -> ((0, 150), (49, 199))
 
   let bounds t =
     keys t |> List.of_iter
@@ -117,21 +88,16 @@ module M = struct
 
   let clamp (x, y) facing t =
     match get (x, y) t with
-    | Some _ ->
-        (x, y)
+    | Some _ -> (x, y)
     | None ->
         let mx, my = bounds t in
         let dir = Facing.dir facing in
         let test =
           match facing with
-          | Up ->
-              (x, my)
-          | Down ->
-              (x, 0)
-          | Left ->
-              (mx, y)
-          | Right ->
-              (0, y)
+          | Up -> (x, my)
+          | Down -> (x, 0)
+          | Left -> (mx, y)
+          | Right -> (0, y)
         in
         let rec aux pos =
           match get pos t with Some _ -> pos | None -> aux (C.add pos dir)
@@ -140,8 +106,7 @@ module M = struct
 
   let cube_clamp (x, y) side facing t =
     match get (x, y) t with
-    | Some _ ->
-        ((x, y), facing)
+    | Some _ -> ((x, y), facing)
     | None ->
         let (x0, y0), _ = origin side in
         let dx, dy = (x - x0, y - y0) in
@@ -189,8 +154,7 @@ module M = struct
           | F, Right ->
               let (x1, _), (_, y2) = origin E in
               ((x1 + dy, y2), Up)
-          | _, _ ->
-              failwith "impossible."
+          | _, _ -> failwith "impossible."
         in
         (pos', facing')
 
@@ -214,23 +178,19 @@ let parse_map lines =
       String.foldi
         (fun acc x c ->
           match c with
-          | '#' ->
-              M.add (x, y) Space.Wall acc
-          | '.' ->
-              M.add (x, y) Space.Open acc
-          | _ ->
-              acc )
-        acc l )
+          | '#' -> M.add (x, y) Space.Wall acc
+          | '.' -> M.add (x, y) Space.Open acc
+          | _ -> acc)
+        acc l)
     M.empty lines
 
 let parse input =
   match String.split ~by:"\n\n" input with
-  | [map; steps] ->
+  | [ map; steps ] ->
       let map = String.split_on_char '\n' map |> parse_map in
       let steps = Parser.parse steps in
       (map, steps)
-  | _ ->
-      failwith "invalid input"
+  | _ -> failwith "invalid input"
 
 let walk ?(cube = false) m steps start facing =
   let rec move pos i facing =
@@ -245,24 +205,18 @@ let walk ?(cube = false) m steps start facing =
         else (M.clamp pos' facing m, facing)
       in
       match M.get pos' m with
-      | Some Space.Open ->
-          move pos' (i - 1) facing'
-      | Some Space.Wall ->
-          (pos, facing)
-      | None ->
-          failwith "impossible"
+      | Some Space.Open -> move pos' (i - 1) facing'
+      | Some Space.Wall -> (pos, facing)
+      | None -> failwith "impossible"
   in
   let act step pos facing =
     match step with
-    | Step.Forward i ->
-        move pos i facing
-    | turn ->
-        (pos, Facing.rotate facing turn)
+    | Step.Forward i -> move pos i facing
+    | turn -> (pos, Facing.rotate facing turn)
   in
   let rec aux steps pos facing =
     match steps with
-    | [] ->
-        (pos, facing)
+    | [] -> (pos, facing)
     | step :: tl ->
         let pos', facing' = act step pos facing in
         aux tl pos' facing'
@@ -282,5 +236,4 @@ let part2 input =
   (1000 * (y + 1)) + (4 * (x + 1)) + Facing.score face
 
 let input = IO.read_all stdin
-
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)

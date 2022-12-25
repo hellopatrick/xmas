@@ -8,25 +8,24 @@ module C = struct
   let compare (x0, y0, z0) (x1, y1, z1) =
     match Int.compare x0 x1 with
     | 0 -> (
-      match Int.compare y0 y1 with
-      | 0 -> (
-        match Int.compare z0 z1 with 0 -> 0 | e -> e )
-      | e ->
-          e )
-    | e ->
-        e
+        match Int.compare y0 y1 with
+        | 0 -> ( match Int.compare z0 z1 with 0 -> 0 | e -> e)
+        | e -> e)
+    | e -> e
 
   let neighbors (x, y, z) =
-    [ (x + 1, y, z)
-    ; (x - 1, y, z)
-    ; (x, y + 1, z)
-    ; (x, y - 1, z)
-    ; (x, y, z - 1)
-    ; (x, y, z + 1) ]
+    [
+      (x + 1, y, z);
+      (x - 1, y, z);
+      (x, y + 1, z);
+      (x, y - 1, z);
+      (x, y, z - 1);
+      (x, y, z + 1);
+    ]
 end
 
 module R = struct
-  type t = {min: int; max: int}
+  type t = { min : int; max : int }
 
   let contains t v = t.min <= v && v <= t.max
 end
@@ -35,7 +34,6 @@ module S = struct
   include Set.Make (C)
 
   let nmem elt t = not @@ mem elt t
-
   let exclude f t = filter (fun elt -> not @@ f elt) t
 
   let bounds t =
@@ -55,9 +53,9 @@ module S = struct
         t (Int.max_int, Int.min_int)
     in
     R.
-      ( {min= minx - 1; max= maxx + 1}
-      , {min= miny - 1; max= maxy + 1}
-      , {min= minz - 1; max= maxz + 1} )
+      ( { min = minx - 1; max = maxx + 1 },
+        { min = miny - 1; max = maxy + 1 },
+        { min = minz - 1; max = maxz + 1 } )
 end
 
 let parse input =
@@ -71,7 +69,7 @@ let part1 input =
       C.neighbors c
       |> List.fold_left
            (fun acc c -> if S.mem c cubes then acc else acc + 1)
-           acc )
+           acc)
     cubes 0
 
 let part2 input =
@@ -80,8 +78,7 @@ let part2 input =
   let start = (rx.min, ry.min, rz.min) in
   let rec loop q v =
     match q with
-    | [] ->
-        v
+    | [] -> v
     | cube :: q ->
         let visited = S.add cube v in
         let next =
@@ -89,18 +86,18 @@ let part2 input =
           |> List.filter (fun (x, y, z) ->
                  R.contains rx x && R.contains ry y && R.contains rz z
                  && (not @@ S.mem (x, y, z) cubes)
-                 && (not @@ S.mem (x, y, z) visited) )
+                 && (not @@ S.mem (x, y, z) visited))
         in
         let visited = S.add_list visited next in
         loop (next @ q) visited
   in
-  let visited = loop [start] (S.singleton start) in
+  let visited = loop [ start ] (S.singleton start) in
   S.fold
     (fun c acc ->
       C.neighbors c
       |> List.fold_left
            (fun acc c -> if S.mem c visited then acc + 1 else acc)
-           acc )
+           acc)
     cubes 0
 
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)

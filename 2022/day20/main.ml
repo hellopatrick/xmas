@@ -1,7 +1,6 @@
 open Containers
 
 let input = IO.read_lines_l stdin
-
 let parse input = List.map int_of_string input
 
 let mix nsi =
@@ -16,8 +15,7 @@ let mix nsi =
             |> List.insert_at_idx ((idx + v) mod (len - 1)) (i, v)
           in
           aux nsi' (n + 1)
-      | None ->
-          failwith "impossible."
+      | None -> failwith "impossible."
   in
   aux nsi 0
 
@@ -36,7 +34,5 @@ let solve ?(key = 1) ?(mixes = 1) input =
   a + b + c
 
 let part1 input = solve input
-
 let part2 input = solve ~key:811589153 ~mixes:10 input
-
 let _ = Printf.printf "part1=%d;part2=%d" (part1 input) (part2 input)

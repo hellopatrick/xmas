@@ -12,10 +12,8 @@ module Map = struct
     let rec aux c d =
       let neighbor = C.add c d in
       match get neighbor m with
-      | None ->
-          true
-      | Some h' ->
-          if h > h' then aux neighbor d else false
+      | None -> true
+      | Some h' -> if h > h' then aux neighbor d else false
     in
     aux coord (0, 1)
     || aux coord (0, -1)
@@ -27,8 +25,7 @@ module Map = struct
     let rec aux c d count =
       let neighbor = C.add c d in
       match get neighbor m with
-      | None ->
-          count
+      | None -> count
       | Some h' ->
           let count = count + 1 in
           if h > h' then aux neighbor d count else count
@@ -46,8 +43,8 @@ let parse lines =
       List.foldi
         (fun acc x c ->
           let h = Char.code c - Char.code '0' in
-          Map.add (x, y) h acc )
-        acc chars )
+          Map.add (x, y) h acc)
+        acc chars)
     Map.empty lines
 
 let part1 m =
@@ -57,9 +54,8 @@ let part2 m =
   Map.fold
     (fun c _ max ->
       let score = Map.score c m in
-      if score > max then score else max )
+      if score > max then score else max)
     m 0
 
 let map = parse input
-
 let _ = Printf.printf "part1=%d;part2=%d" (part1 map) (part2 map)
