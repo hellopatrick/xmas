@@ -1,7 +1,7 @@
 open Containers
 
 module SNAFU = struct
-  let to_rep num =
+  let to_string num =
     let rec aux num digits =
       if num = 0 then digits
       else
@@ -16,7 +16,7 @@ module SNAFU = struct
     in
     aux num [] |> String.of_list
 
-  let parse str =
+  let of_string str =
     let digits = String.to_list str |> List.rev in
     let rec aux digits place value =
       match digits with
@@ -37,10 +37,10 @@ module SNAFU = struct
 end
 
 let input = IO.read_lines_l stdin
-let parse input = List.map SNAFU.parse input
+let parse input = List.map SNAFU.of_string input
 
 let part1 input =
   let nums = parse input in
-  List.fold_left ( + ) 0 nums |> SNAFU.to_rep
+  List.fold_left ( + ) 0 nums |> SNAFU.to_string
 
 let _ = Printf.printf "part1=%s;part2=" (part1 input)
