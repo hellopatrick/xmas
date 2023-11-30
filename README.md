@@ -6,10 +6,10 @@ Yet another Advent of Code repo. Yearly relapse into OCaml.
 
 ```bash
 # Run all days.
-> dune runtest
+> dune test
 
 # Run an individual day.
-> dune build @day01/test
+> dune test 2023/day01
 ```
 
 ## Editions
