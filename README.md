@@ -1,4 +1,4 @@
-# Advent Of Code
+# Advent Of Code, Ocaml Edition.
 
 Yet another Advent of Code repo. Yearly relapse into OCaml.
 
