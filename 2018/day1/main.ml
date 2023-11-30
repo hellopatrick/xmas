@@ -1,9 +1,8 @@
 open Containers
+module IS = Set.Make (Int)
 
 let input = IO.read_lines_l stdin |> List.map Int.of_string_exn
 let part1 = List.fold_left ( + ) 0 input
-
-module IS = Set.Make (Int)
 
 let part2 =
   let track (seen, freq) s =
