@@ -3,3 +3,4 @@ input/
 test/*/input
 .DS_Store
 **/test.t/input
+.vscode
