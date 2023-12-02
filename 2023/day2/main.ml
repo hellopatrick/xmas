@@ -1,12 +1,21 @@
 open Containers
 
-let input = IO.read_lines_l stdin
+module Round = struct
+  type t = { red : int; green : int; blue : int }
 
-type round = { red : int; green : int; blue : int }
-type t = { id : int; rounds : round list }
+  let merge ?(op = Int.add) { red = r; green = g; blue = b }
+      { red = r'; green = g'; blue = b' } =
+    { red = op r r'; green = op g g'; blue = op b b' }
 
-let merge { red = r; green = g; blue = b } { red = r'; green = g'; blue = b' } =
-  { red = r + r'; green = g + g'; blue = b + b' }
+  let power { red; green; blue } = red * green * blue
+end
+
+module Game = struct
+  type t = { id : int; rounds : Round.t list }
+
+  let id { id; _ } = id
+  let rounds { rounds; _ } = rounds
+end
 
 module P = struct
   open Angstrom
@@ -16,45 +25,44 @@ module P = struct
   let comma = string ", "
 
   let red =
-    number <* string " red" >>| fun i -> { red = i; green = 0; blue = 0 }
+    number <* string " red" >>| fun i -> Round.{ red = i; green = 0; blue = 0 }
 
   let green =
-    number <* string " green" >>| fun i -> { red = 0; green = i; blue = 0 }
+    number <* string " green" >>| fun i ->
+    Round.{ red = 0; green = i; blue = 0 }
 
   let blue =
-    number <* string " blue" >>| fun i -> { red = 0; green = 0; blue = i }
+    number <* string " blue" >>| fun i -> Round.{ red = 0; green = 0; blue = i }
 
   let rounds =
     sep_by comma (red <|> green <|> blue) >>| fun r ->
-    List.fold_left merge { red = 0; green = 0; blue = 0 } r
+    List.fold_left Round.merge { red = 0; green = 0; blue = 0 } r
 
   let game =
-    lift2 (fun id rounds -> { id; rounds }) id (sep_by (string "; ") rounds)
+    lift2
+      (fun i r -> Game.{ id = i; rounds = r })
+      id
+      (sep_by (string "; ") rounds)
 
   let parse line = parse_string ~consume:All game line |> Result.get_or_failwith
 end
 
+let input = IO.read_lines_l stdin
 let games = List.map P.parse input
 
 let part1 =
-  let r, g, b = (12, 13, 14) in
-  let possible { rounds; _ } =
+  let possible Game.{ rounds; _ } =
     List.for_all
-      (fun { red; green; blue } -> red <= r && green <= g && blue <= b)
+      (fun Round.{ red; green; blue } -> red <= 12 && green <= 13 && blue <= 14)
       rounds
   in
-  List.filter possible games |> List.map (fun { id; _ } -> id) |> Xmas.Enum.sum
+  List.filter possible games |> List.map Game.id |> Xmas.Enum.sum
 
 let minimum_viable rs =
-  List.fold_left
-    (fun { red = r; green = g; blue = b } { red = r'; green = g'; blue = b' } ->
-      { red = max r r'; green = max g g'; blue = max b b' })
-    { red = 0; green = 0; blue = 0 }
-    rs
+  List.fold_left (Round.merge ~op:max) { red = 0; green = 0; blue = 0 } rs
 
 let part2 =
-  List.map (fun { rounds; _ } -> minimum_viable rounds) games
-  |> List.map (fun { red; green; blue } -> red * green * blue)
-  |> Xmas.Enum.sum
+  games |> List.map Game.rounds |> List.map minimum_viable
+  |> List.map Round.power |> Xmas.Enum.sum
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
