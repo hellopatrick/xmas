@@ -2,7 +2,7 @@
 
 num=$1
 day="day$num"
-year="${2:-2023}"
+year="${2:-$(date +"%Y")}"
 exc="$day.$year"
 path="$year/$day"
 
