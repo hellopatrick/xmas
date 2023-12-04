@@ -16,13 +16,11 @@ module Input = struct
   let parse =
     let open Angstrom in
     let open Xmas.Parsing in
-    let* _ =
-      string "Card" *> whitespace *> number *> whitespace *> string ":"
-      *> whitespace
-    in
-    let* winning = sep_by1 whitespace number in
-    let* _ = whitespace *> string "|" *> whitespace in
-    let* given = sep_by1 whitespace number in
+    let* _ = string "Card" *> ws *> number *> ws *> string ":" *> ws in
+    let numbers = sep_by1 ws number in
+    let* winning = numbers in
+    let* _ = ws *> string "|" *> ws in
+    let* given = numbers in
     return { winning = IS.of_list winning; given = IS.of_list given }
 
   let parse_all =
