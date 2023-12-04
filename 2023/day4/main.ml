@@ -23,12 +23,10 @@ module Input = struct
     let* given = numbers in
     return { winning = IS.of_list winning; given = IS.of_list given }
 
-  let parse_all =
-    List.map (fun l ->
-        l |> Angstrom.parse_string ~consume:All parse |> Result.get_exn)
+  let parse_each = List.map @@ Angstrom.parse_string ~consume:All parse
 end
 
-let input = Input.parse_all input
+let input = input |> Input.parse_each |> List.map Result.get_exn
 let part1 = input |> List.map Input.score |> List.fold_left ( + ) 0
 
 let part2 =
