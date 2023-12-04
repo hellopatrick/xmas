@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 num=$1
 day="day$num"
