@@ -35,16 +35,13 @@ let part1 = input |> List.map Input.score |> List.fold_left ( + ) 0
 
 let part2 =
   let cards = Array.make (List.length input) 1 in
-  let rec aux r i =
-    match r with
-    | [] -> Array.fold ( + ) 0 cards
-    | next :: r' ->
-        let matches = Input.matches next in
-        if matches > 0 then
-          Seq.range (i + 1) (i + matches)
-          |> Seq.iter (fun j -> cards.(j) <- cards.(j) + cards.(i));
-        aux r' (i + 1)
-  in
-  aux input 0
+  List.foldi
+    (fun acc i next ->
+      let matches = Input.matches next in
+      if matches > 0 then
+        Seq.range (i + 1) (i + matches)
+        |> Seq.iter (fun j -> cards.(j) <- cards.(j) + cards.(i));
+      acc + cards.(i))
+    0 input
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
