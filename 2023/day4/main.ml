@@ -5,9 +5,8 @@ let input = IO.read_lines_l stdin
 module IS = Set.Make (Int)
 
 module Input = struct
-  type t = { id : int; winning : IS.t; given : IS.t }
+  type t = { winning : IS.t; given : IS.t }
 
-  let empty = { id = -1; winning = IS.empty; given = IS.empty }
   let matches t = IS.cardinal @@ IS.inter t.winning t.given
 
   let score t =
@@ -17,13 +16,14 @@ module Input = struct
   let parse =
     let open Angstrom in
     let open Xmas.Parsing in
-    let* _ = string "Card" *> whitespace in
-    let* id = number in
-    let* _ = whitespace *> string ":" *> whitespace in
+    let* _ =
+      string "Card" *> whitespace *> number *> whitespace *> string ":"
+      *> whitespace
+    in
     let* winning = sep_by1 whitespace number in
     let* _ = whitespace *> string "|" *> whitespace in
     let* given = sep_by1 whitespace number in
-    return { id; winning = IS.of_list winning; given = IS.of_list given }
+    return { winning = IS.of_list winning; given = IS.of_list given }
 
   let parse_all =
     List.map (fun l ->
