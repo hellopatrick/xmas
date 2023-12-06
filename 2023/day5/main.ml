@@ -18,19 +18,17 @@ module Input = struct
 
   let parse =
     let list_of_nums = sep_by1 whitespace number in
-    let* prefix =
+    let* seeds =
       string "seeds: " *> list_of_nums <* end_of_line <* end_of_line
     in
-    let header = take_till is_whitespace <* chomp_eol in
     let nums =
       sep_by1 end_of_line
         (list_of_nums >>| function
          | [ a; b; c ] -> ((b, b + c), (a, a + c))
          | _ -> failwith "impossible")
     in
-    let block = lift2 (fun _ nums -> nums) header nums in
-    let* blocks = sep_by1 (many1 end_of_line) block in
-    return (prefix, blocks)
+    let* blocks = sep_by1 (many1 end_of_line) (chomp_eol *> nums) in
+    return (seeds, blocks)
 end
 
 let seeds, maps =
