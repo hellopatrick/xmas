@@ -1,14 +1,5 @@
 open Containers
-
-let input = IO.read_all stdin
-
-module Interval = struct
-  (* Interval.t = [a, b) *)
-  type t = int * int
-
-  let is_empty (a, b) = a >= b
-  let intersects (a, b) (c, d) = if a < c then b > c else a < d
-end
+module Interval = Xmas.Interval
 
 module Input = struct
   type t = int * int
@@ -30,6 +21,8 @@ module Input = struct
     let* blocks = sep_by1 (many1 end_of_line) (chomp_eol *> nums) in
     return (seeds, blocks)
 end
+
+let input = IO.read_all stdin
 
 let seeds, maps =
   let open Angstrom in
