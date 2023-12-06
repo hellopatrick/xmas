@@ -1,4 +1,4 @@
-module Coordinate = struct
+module C = struct
   type t = int * int
 
   let zero _ = (0, 0)
@@ -14,6 +14,6 @@ module Coordinate = struct
     Int.abs (t0 - s0) + Int.abs (t1 - s1)
 end
 
-include Coordinate
-module Set = CCSet.Make (Coordinate)
-module Map = CCMap.Make (Coordinate)
+include C
+module Set = CCSet.Make (C)
+module Map = CCMap.Make (C)
