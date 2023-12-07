@@ -1,53 +1,72 @@
 open Containers
 
 module Card = struct
-  type t = int
+  type t =
+    | Joker [@value 1]
+    | Two
+    | Three
+    | Four
+    | Five
+    | Six
+    | Seven
+    | Eight
+    | Nine
+    | Ten
+    | Jack
+    | Queen
+    | King
+    | Ace
+  [@@deriving show, enum, ord, eq]
 
-  let is_joker t = t = -1
+  let is_joker = equal Joker
 
   let of_char ?(joker = false) c =
     match c with
-    | 'A' -> 14
-    | 'K' -> 13
-    | 'Q' -> 12
-    | 'J' -> if joker then -1 else 11
-    | 'T' -> 10
-    | _ -> Char.to_int c - Char.to_int '0'
+    | 'A' -> Ace
+    | 'K' -> King
+    | 'Q' -> Queen
+    | 'J' -> if joker then Joker else Jack
+    | 'T' -> Ten
+    | _ ->
+        of_enum (Char.to_int c - Char.to_int '0') |> Option.get_exn_or "invalid"
 end
 
 module Hand = struct
-  let strength h =
+  type t =
+    | HighCard of Card.t list
+    | Pair of Card.t list
+    | TwoPairs of Card.t list
+    | ThreeOfAKind of Card.t list
+    | FullHouse of Card.t list
+    | FourOfAKind of Card.t list
+    | FiveOfAKind of Card.t list
+  [@@deriving show, eq, ord]
+
+  let of_list h =
     let jokers = List.count Card.is_joker h in
     let groups =
-      List.group_by ~eq:Int.equal h
+      List.group_by ~eq:Card.equal h
       |> List.map List.length |> List.sort Int.compare
     in
     match groups with
-    | [ 5 ] -> 7
-    | [ 1; 4 ] -> if jokers = 0 then 6 else 7
-    | [ 2; 3 ] -> if jokers = 0 then 5 else 7
-    | [ 1; 1; 3 ] -> if jokers = 0 then 4 else 6
-    | [ 1; 2; 2 ] -> if jokers = 0 then 3 else if jokers = 1 then 5 else 6
-    | [ 1; 1; 1; 2 ] -> if jokers = 0 then 2 else 4
-    | [ 1; 1; 1; 1; 1 ] -> if jokers = 0 then 1 else 2
-    | _ -> 0
-
-  let compare h h' =
-    let s = strength h in
-    let s' = strength h' in
-    if s > s' then 1
-    else if s < s' then -1
-    else
-      let c = List.combine h h' in
-      match List.find_opt (fun (a, b) -> not @@ Int.equal a b) c with
-      | None -> 0
-      | Some (a, b) -> if a > b then 1 else -1
+    | [ 5 ] -> FiveOfAKind h
+    | [ 1; 4 ] -> if jokers = 0 then FourOfAKind h else FiveOfAKind h
+    | [ 2; 3 ] -> if jokers = 0 then FullHouse h else FiveOfAKind h
+    | [ 1; 1; 3 ] -> if jokers = 0 then ThreeOfAKind h else FourOfAKind h
+    | [ 1; 2; 2 ] ->
+        if jokers = 0 then TwoPairs h
+        else if jokers = 1 then FullHouse h
+        else FourOfAKind h
+    | [ 1; 1; 1; 2 ] -> if jokers = 0 then Pair h else ThreeOfAKind h
+    | _ -> if jokers = 0 then HighCard h else Pair h
 end
 
 module Input = struct
   let parse ?(joker = false) line =
     let hand, bid = Scanf.sscanf line "%s %d" (fun s c -> (s, c)) in
-    let hand = String.to_list hand |> List.map (Card.of_char ~joker) in
+    let hand =
+      String.to_list hand |> List.map (Card.of_char ~joker) |> Hand.of_list
+    in
     (hand, bid)
 end
 
