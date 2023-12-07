@@ -3,6 +3,8 @@ open Containers
 module Card = struct
   type t = int
 
+  let is_joker t = t = -1
+
   let of_char ?(joker = false) c =
     match c with
     | 'A' -> 14
@@ -15,10 +17,11 @@ end
 
 module Hand = struct
   let strength h =
-    let jokers = List.count (fun c -> c = -1) h in
-    let groups = List.group_by ~eq:Int.equal h in
-    let groups = List.map List.length groups in
-    let groups = List.sort Int.compare groups in
+    let jokers = List.count Card.is_joker h in
+    let groups =
+      List.group_by ~eq:Int.equal h
+      |> List.map List.length |> List.sort Int.compare
+    in
     match groups with
     | [ 5 ] -> 7
     | [ 1; 4 ] -> if jokers = 0 then 6 else 7
@@ -55,6 +58,6 @@ let answer hands =
   |> List.sort (fun (h, _) (h', _) -> Hand.compare h h')
   |> List.foldi (fun acc i (_, b) -> acc + ((i + 1) * b)) 0
 
-let part1 = List.map Input.parse input |> answer
-let part2 = List.map (Input.parse ~joker:true) input |> answer
+let part1 = input |> List.map Input.parse |> answer
+let part2 = input |> List.map (Input.parse ~joker:true) |> answer
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
