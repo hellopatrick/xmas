@@ -1,25 +1,19 @@
 open Containers
 
 module Input = struct
-  let parse lines =
-    let times, distances =
-      match lines with
-      | times :: distances :: _ -> (times, distances)
-      | _ -> failwith "invalid line"
-    in
-    let parse' line =
-      List.filter_map Int.of_string @@ String.split_on_char ' ' line
-    in
-    List.combine (parse' times) (parse' distances)
+  open Angstrom
+  open Xmas.Parsing
 
-  let parse_kerning lines =
-    let parse' line =
-      match String.replace ~sub:" " ~by:"" line |> String.split_on_char ':' with
-      | _ :: n :: _ -> Int.of_string_exn n
-      | _ -> failwith "invalid line"
-    in
+  let line_parser =
+    take_while (fun c -> not @@ is_digit c) *> sep_by1 whitespace number
+
+  let parse_line line =
+    line |> parse_string ~consume:All line_parser |> Result.get_or_failwith
+
+  let parse lines =
     match lines with
-    | time :: distance :: _ -> (parse' time, parse' distance)
+    | times :: distances :: _ ->
+        List.combine (parse_line times) (parse_line distances)
     | _ -> failwith "invalid line"
 end
 
@@ -36,13 +30,13 @@ let winnable_strategies time distance =
   Seq.range 0 time
   |> Seq.fold (fun acc i -> if is_winnable i then acc + 1 else acc) 0
 
-let part1 =
-  let races = Input.parse input in
+let answer races =
   List.map (fun (t, d) -> winnable_strategies t d) races
   |> List.fold_left Int.mul 1
 
+let part1 = input |> Input.parse |> answer
+
 let part2 =
-  let t, d = Input.parse_kerning input in
-  winnable_strategies t d
+  input |> List.map (String.replace ~sub:" " ~by:"") |> Input.parse |> answer
 
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
