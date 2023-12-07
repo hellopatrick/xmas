@@ -50,19 +50,11 @@ end
 
 let input = IO.read_lines_l stdin
 
-let part1 =
-  let res =
-    List.map Input.parse input
-    |> List.sort (fun (h, _) (h', _) -> Hand.compare h h')
-  in
-  res |> List.foldi (fun acc i (_, b) -> acc + ((i + 1) * b)) 0
+let answer hands =
+  hands
+  |> List.sort (fun (h, _) (h', _) -> Hand.compare h h')
+  |> List.foldi (fun acc i (_, b) -> acc + ((i + 1) * b)) 0
 
-let part2 =
-  let joker = true in
-  let res =
-    List.map (Input.parse ~joker) input
-    |> List.sort (fun (h, _) (h', _) -> Hand.compare h h')
-  in
-  res |> List.foldi (fun acc i (_, b) -> acc + ((i + 1) * b)) 0
-
+let part1 = List.map Input.parse input |> answer
+let part2 = List.map (Input.parse ~joker:true) input |> answer
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
