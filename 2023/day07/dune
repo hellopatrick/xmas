@@ -1,0 +1,9 @@
+(executable
+ (public_name day07.2023)
+ (name main)
+ (preprocess
+  (pps ppx_deriving.show ppx_deriving.enum ppx_deriving.ord ppx_deriving.eq))
+ (libraries xmas containers))
+
+(cram
+ (deps %{bin:day07.2023}))

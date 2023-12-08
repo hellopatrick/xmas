@@ -1,7 +1,0 @@
-(executable
- (public_name day8.2023)
- (name main)
- (libraries xmas containers))
-
-(cram
- (deps %{bin:day8.2023}))

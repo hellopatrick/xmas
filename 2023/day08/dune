@@ -1,0 +1,7 @@
+(executable
+ (public_name day08.2023)
+ (name main)
+ (libraries xmas containers))
+
+(cram
+ (deps %{bin:day08.2023}))
