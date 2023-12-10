@@ -92,16 +92,6 @@ let cs =
   List.cartesian_product [ xs; ys ]
   |> List.filter_map (function [ x; y ] -> Some (x, y) | _ -> None)
 
-let debug = function
-  | '-' -> "─"
-  | '|' -> "│"
-  | 'L' -> "╰"
-  | 'J' -> "╯"
-  | '7' -> "╮"
-  | 'F' -> "╭"
-  | 'S' -> "S"
-  | _ -> "░"
-
 let is_inside (x, y) =
   if CS.mem (x, y) fence then false
   else
@@ -124,23 +114,33 @@ let is_inside (x, y) =
               None
         | Some '|' -> aux (x - 1, y) (cnt + 1) None
         | _ -> false
-      else aux (x - 1, y) cnt carry
+      else aux (x - 1, y) cnt None
     in
     aux (x, y) 0 None
 
-(* let _ =
-   List.iter
-     (fun y ->
-       List.iter
-         (fun x ->
-           if CS.mem (x, y) fence then
-             let c = CM.get_or ~default:'.' (x, y) map in
-             Printf.printf "%s" (debug c)
-           else if is_inside (x, y) then Printf.printf "▓"
-           else Printf.printf "░")
-         xs;
-       Printf.printf "\n")
-     ys *)
+(* let debug = function
+     | '-' -> "─"
+     | '|' -> "│"
+     | 'L' -> "╰"
+     | 'J' -> "╯"
+     | '7' -> "╮"
+     | 'F' -> "╭"
+     | 'S' -> "S"
+     | _ -> "░"
+
+   let _ =
+     List.iter
+       (fun y ->
+         List.iter
+           (fun x ->
+             if CS.mem (x, y) fence then
+               let c = CM.get_or ~default:'.' (x, y) map in
+               Printf.printf "%s" (debug c)
+             else if is_inside (x, y) then Printf.printf "▓"
+             else Printf.printf "░")
+           xs;
+         Printf.printf "\n")
+       ys *)
 
 let part2 = List.map (fun (x, y) -> is_inside (x, y)) cs |> List.count Fun.id
 let _ = Printf.printf "part1=%d;part2=%d" part1 part2
