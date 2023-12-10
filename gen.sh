@@ -42,10 +42,10 @@ cat > "$path/test.t/run.t" <<EOF
 https://adventofcode.com/$year/day/$num
 
   $ $exc < test
-  part1 =  ; part2 = 
+  part1 = 0 ; part2 = 0
 
   $ $exc < input
-  part1 =  ; part2 = 
+  part1 = 0 ; part2 = 0
 EOF
 
 dune build
