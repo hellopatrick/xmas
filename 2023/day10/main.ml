@@ -122,7 +122,7 @@ let is_inside (x, y) =
               (x - 1, y)
               (match carry with Some '7' -> cnt | _ -> cnt + 1)
               None
-        | Some '|' -> aux (x - 1, y) (cnt + 1) carry
+        | Some '|' -> aux (x - 1, y) (cnt + 1) None
         | _ -> false
       else aux (x - 1, y) cnt carry
     in
