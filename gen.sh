@@ -25,7 +25,10 @@ open Containers
 
 let input = IO.read_lines_l stdin
 
-let _ = Printf.printf "part1=;part2="
+let part1 = 0
+let part2 = 0
+
+let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
 EOF
 
 # test files
@@ -39,10 +42,10 @@ cat > "$path/test.t/run.t" <<EOF
 https://adventofcode.com/$year/day/$num
 
   $ $exc < test
-  part1=;part2=
+  part1 =  ; part2 = 
 
   $ $exc < input
-  part1=;part2=
+  part1 =  ; part2 = 
 EOF
 
 dune build
