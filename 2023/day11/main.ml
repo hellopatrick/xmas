@@ -60,7 +60,6 @@ module Input = struct
 end
 
 let input = IO.read_lines_l stdin
-let universe = Input.parse input
 
 let solve universe =
   let locs = CM.keys universe |> List.of_iter in
