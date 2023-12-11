@@ -47,11 +47,10 @@ module Input = struct
           List.foldi
             (fun (acc, dx, dy) x c ->
               match c with
-              | Space.Empty -> (acc, dx, dy)
-              | Space.Galaxy ->
-                  (CM.add (x + dx, y + dy) Space.Galaxy acc, dx, dy)
+              | Space.Empty | Space.BlankY -> (acc, dx, dy)
               | Space.BlankX -> (acc, dx + expansion, dy)
-              | Space.BlankY -> (acc, dx, dy))
+              | Space.Galaxy ->
+                  (CM.add (x + dx, y + dy) Space.Galaxy acc, dx, dy))
             (acc, 0, dy + dy')
             line)
         (CM.empty, 0, 0) map
