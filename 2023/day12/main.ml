@@ -26,7 +26,7 @@ let rec possibilities cs is =
       | [], [] -> 1
       | [], _ -> 0
       | '.' :: tl, _ -> possibilities tl is
-      | '#' :: tl, _ -> handle_dmg cs is
+      | '#' :: _, _ -> handle_dmg cs is
       | '?' :: tl, _ -> possibilities tl is + handle_dmg cs is
       | _ -> failwith "impossible")
     ~k:(cs, is)
