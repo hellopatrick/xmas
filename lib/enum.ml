@@ -16,7 +16,8 @@ let rec choose k l =
           starting_with_h @ not_starting_with_h
       | [] -> assert false
 
-let rec transpose ls =
-  match ls with
-  | [] | [] :: _ -> []
-  | ls -> List.map List.hd ls :: transpose (List.map List.tl ls)
+let rec transpose list =
+  match list with
+  | [] -> []
+  | [] :: xss -> transpose xss
+  | (x :: xs) :: xss -> List.((x :: map hd xss) :: transpose (xs :: map tl xss))
