@@ -1,7 +1,7 @@
 open Containers
 module CM = Xmas.Coordinate.Map
 
-type t = Round | Square
+type t = Round | Square | Ground
 
 module Input = struct
   let parse lines =
@@ -12,6 +12,7 @@ module Input = struct
             match c with
             | 'O' -> CM.add (x, y) Round acc
             | '#' -> CM.add (x, y) Square acc
+            | '.' -> CM.add (x, y) Ground acc
             | _ -> acc)
           acc row)
       CM.empty lines
@@ -22,90 +23,37 @@ let input =
 
 type dir = North | South | West | East
 
-let bounds grid =
-  CM.bindings grid |> List.map fst
-  |> List.fold_left (fun (mx, my) (x, y) -> (max mx x, max my y)) (0, 0)
+let move dir coord =
+  match dir with
+  | North -> Xmas.Coordinate.add coord (0, -1)
+  | South -> Xmas.Coordinate.add coord (0, 1)
+  | East -> Xmas.Coordinate.add coord (1, 0)
+  | West -> Xmas.Coordinate.add coord (-1, 0)
 
-let tilt dir grid =
-  let mx, my = bounds grid in
+let can_move dir coord grid =
+  match CM.get coord grid with
+  | Some Round -> (
+      match CM.get (move dir coord) grid with Some Ground -> true | _ -> false)
+  | _ -> false
 
-  let order =
-    match dir with
-    | North ->
-        Seq.range 0 my
-        |> Seq.flat_map (fun y -> Seq.range 0 mx |> Seq.map (fun x -> (x, y)))
-    | South ->
-        Seq.range my 0
-        |> Seq.flat_map (fun y -> Seq.range 0 mx |> Seq.map (fun x -> (x, y)))
-    | West ->
-        Seq.range 0 mx
-        |> Seq.flat_map (fun x -> Seq.range 0 my |> Seq.map (fun y -> (x, y)))
-    | East ->
-        Seq.range mx 0
-        |> Seq.flat_map (fun x -> Seq.range 0 my |> Seq.map (fun y -> (x, y)))
-  in
+let rec tilt dir grid =
+  let move = move dir in
 
-  let rocks =
-    CM.filter (fun _ c -> match c with Square -> true | _ -> false) grid
-  in
-
-  Seq.fold
-    (fun acc (x, y) ->
-      match CM.get (x, y) grid with
-      | Some Square | None -> acc
-      | Some Round ->
-          let x', y' =
-            match dir with
-            | North -> (
-                let ys = Seq.range (y - 1) 0 in
-                match Seq.find (fun y -> CM.mem (x, y) acc) ys with
-                | Some y' -> (x, y' + 1)
-                | None -> (x, 0))
-            | South -> (
-                let ys = Seq.range (y + 1) my in
-                match Seq.find (fun y -> CM.mem (x, y) acc) ys with
-                | Some y' -> (x, y' - 1)
-                | None -> (x, my))
-            | East -> (
-                let xs = Seq.range (x + 1) mx in
-                match Seq.find (fun x -> CM.mem (x, y) acc) xs with
-                | Some x' -> (x' - 1, y)
-                | None -> (mx, y))
-            | West -> (
-                let xs = Seq.range (x - 1) 0 in
-                match Seq.find (fun x -> CM.mem (x, y) acc) xs with
-                | Some x' -> (x' + 1, y)
-                | None -> (0, y))
-          in
-          CM.add (x', y') Round acc)
-    rocks order
+  let rocks = CM.filter (fun c _ -> can_move dir c grid) grid in
+  if CM.cardinal rocks > 0 then
+    let grid' =
+      CM.fold
+        (fun c _ acc -> acc |> CM.add c Ground |> CM.add (move c) Round)
+        rocks grid
+    in
+    tilt dir grid'
+  else grid
 
 let cycle grid = grid |> tilt North |> tilt West |> tilt South |> tilt East
-
-let debug _ =
-  let n = List.length input in
-  let grid = Input.parse input in
-  let grid' = cycle grid in
-  let print g n =
-    Seq.range 0 (n - 1)
-    |> Seq.iter (fun y ->
-           Seq.range 0 (n - 1)
-           |> Seq.iter (fun x ->
-                  match CM.get (x, y) g with
-                  | Some Round -> print_char 'O'
-                  | Some Square -> print_char '#'
-                  | None -> print_char '.');
-           print_newline ())
-  in
-  prerr_endline "---";
-  print grid n;
-  print_endline "---";
-  print grid' n
-
 let start = Input.parse input
 
 let load grid =
-  let _, my = bounds grid in
+  let my = CM.fold (fun (_, y) _ acc -> max y acc) grid 0 in
   CM.fold
     (fun (x, y) c acc -> match c with Round -> acc + (my + 1 - y) | _ -> acc)
     grid 0
