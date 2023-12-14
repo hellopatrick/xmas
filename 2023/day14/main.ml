@@ -43,7 +43,7 @@ let rec tilt dir grid =
   if CM.cardinal rocks > 0 then
     let grid' =
       CM.fold
-        (fun c _ acc -> acc |> CM.add c Ground |> CM.add (move c) Round)
+        (fun c _ acc -> CM.add_list acc [ (c, Ground); (move c, Round) ])
         rocks grid
     in
     tilt dir grid'
