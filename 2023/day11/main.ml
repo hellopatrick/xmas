@@ -37,7 +37,7 @@ module Input = struct
 
     let m, _, _ =
       List.foldi
-        (fun (acc, dx, dy) y line ->
+        (fun (acc, _, dy) y line ->
           let dy' =
             if List.exists (function Space.BlankY -> true | _ -> false) line
             then expansion

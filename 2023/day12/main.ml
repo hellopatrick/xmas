@@ -37,8 +37,8 @@ and handle_dmg cs is =
       let cl = List.length cs in
       match is with
       | [] -> 0
-      | a :: tl when cl < a -> 0
-      | a :: tl when List.exists (Char.equal '.') (List.take a cs) -> 0
+      | a :: _ when cl < a -> 0
+      | a :: _ when List.exists (Char.equal '.') (List.take a cs) -> 0
       | a :: [] when cl = a -> 1
       | a :: _ when cl = a -> 0
       | a :: tl -> (

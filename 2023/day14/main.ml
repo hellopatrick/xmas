@@ -55,7 +55,7 @@ let start = Input.parse input
 let load grid =
   let my = 1 + CM.fold (fun (_, y) _ acc -> max y acc) grid 0 in
   CM.fold
-    (fun (x, y) c acc -> match c with Round -> acc + (my - y) | _ -> acc)
+    (fun (_, y) c acc -> match c with Round -> acc + (my - y) | _ -> acc)
     grid 0
 
 let part1 = start |> tilt North |> load
