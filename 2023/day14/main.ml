@@ -126,6 +126,6 @@ let part2 =
   let first, next = aux start 0 in
   let n = (1_000_000_000 - first) mod (next - first) in
   let j = first + n in
-  Hashtbl.get_or loads j ~default:0
+  Hashtbl.get loads j |> Option.get_exn_or "load should exist."
 
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
