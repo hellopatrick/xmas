@@ -1,7 +1,5 @@
 open Containers
 
-type cmd = Set of string * int | Remove of string
-
 let hash str =
   String.fold (fun acc c -> (acc + Char.to_int c) * 17 mod 256) 0 str
 
