@@ -75,19 +75,22 @@ let next map p dir =
 let map = Input.parse input
 
 let walk map p dir =
-  let rec aux energized seen beams =
+  let rec aux seen beams =
     match beams with
-    | [] -> energized
+    | [] -> seen
     | (p, dir) :: rest ->
-        if BS.mem (p, dir) seen then aux energized seen rest
-        else if not @@ CM.mem p map then aux energized seen rest
+        if BS.mem (p, dir) seen then aux seen rest
+        else if not @@ CM.mem p map then aux seen rest
         else
-          let energized = CS.add p energized in
           let seen = BS.add (p, dir) seen in
-          let qs = next map p dir |> List.map (fun dir -> (step p dir, dir)) in
-          aux energized seen (List.append rest qs)
+          let qs =
+            next map p dir
+            |> List.fold_left (fun acc dir -> (step p dir, dir) :: acc) rest
+          in
+          aux seen qs
   in
-  aux CS.empty BS.empty [ (p, dir) ] |> CS.cardinal
+  let seen = aux BS.empty [ (p, dir) ] in
+  BS.fold (fun pt acc -> CS.add (fst pt) acc) seen CS.empty |> CS.cardinal
 
 let part1 = walk map (0, 0) Right
 
