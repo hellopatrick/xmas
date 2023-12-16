@@ -77,7 +77,7 @@ let map = Input.parse input
 let part1 =
   let rec aux energized seen beams =
     match beams with
-    | [] -> (energized, seen)
+    | [] -> energized
     | (p, dir) :: rest ->
         if BS.mem (p, dir) seen then aux energized seen rest
         else if not @@ CM.mem p map then aux energized seen rest
@@ -87,34 +87,7 @@ let part1 =
           let qs = next map p dir |> List.map (fun dir -> (step p dir, dir)) in
           aux energized seen (List.append rest qs)
   in
-  let res, seen = aux CS.empty BS.empty [ ((0, 0), Right) ] in
-  List.range 0 9
-  |> List.iter (fun y ->
-         List.range 0 9
-         |> List.iter (fun x ->
-                match CM.get (x, y) map with
-                | Some Empty -> (
-                    let dirs =
-                      BS.filter
-                        (fun (p, _) -> Xmas.Coordinate.equal (x, y) p)
-                        seen
-                    in
-                    let n = BS.cardinal dirs in
-                    if n = 0 then print_char '.'
-                    else if n > 1 then print_int n
-                    else
-                      match BS.choose dirs with
-                      | _, Up -> print_char '^'
-                      | _, Down -> print_char 'v'
-                      | _, Right -> print_char '>'
-                      | _, Left -> print_char '<')
-                | Some LeftLeaningMirror -> print_char '\\'
-                | Some RightLeaningMirror -> print_char '/'
-                | Some HorizontalSplitter -> print_char '-'
-                | Some VerticalSplitter -> print_char '|'
-                | _ -> ());
-         print_newline ());
-  CS.cardinal res
+  aux CS.empty BS.empty [ ((0, 0), Right) ] |> CS.cardinal
 
 let part2 = 0
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
