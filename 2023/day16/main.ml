@@ -73,31 +73,31 @@ let next map p dir =
       match dir with Left | Right -> [ Up; Down ] | Up | Down -> [ dir ])
 
 let map = Input.parse input
+let mx, my = (List.length input - 1, List.length input - 1)
 
 let walk map p dir =
-  let rec aux seen beams =
+  let seen = Hashtbl.create 1_000 in
+  let rec aux beams =
     match beams with
     | [] -> seen
-    | (p, dir) :: rest ->
-        if BS.mem (p, dir) seen then aux seen rest
-        else if not @@ CM.mem p map then aux seen rest
+    | (((px, py) as p), dir) :: rest ->
+        if px < 0 || py < 0 || px > mx || py > my then aux rest
+        else if Hashtbl.mem seen (p, dir) then aux rest
         else
-          let seen = BS.add (p, dir) seen in
+          let _ = Hashtbl.add seen (p, dir) true in
           let qs =
             next map p dir
             |> List.fold_left (fun acc dir -> (step p dir, dir) :: acc) rest
           in
-          aux seen qs
+          aux qs
   in
-  let seen = aux BS.empty [ (p, dir) ] in
-  BS.fold (fun pt acc -> CS.add (fst pt) acc) seen CS.empty |> CS.cardinal
+  let seen = aux [ (p, dir) ] in
+  Hashtbl.fold (fun pt _ acc -> CS.add (fst pt) acc) seen CS.empty
+  |> CS.cardinal
 
 let part1 = walk map (0, 0) Right
 
 let starts =
-  let mx, my =
-    CM.fold (fun (x, y) _ (mx, my) -> (max x mx, max y my)) map (0, 0)
-  in
   let downs = Seq.init (mx + 1) (fun x -> ((x, 0), Down))
   and ups = Seq.init (mx + 1) (fun x -> ((x, my), Up))
   and lefts = Seq.init (my + 1) (fun y -> ((mx, y), Left))
