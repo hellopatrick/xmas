@@ -74,7 +74,7 @@ let next map p dir =
 
 let map = Input.parse input
 
-let part1 =
+let walk map p dir =
   let rec aux energized seen beams =
     match beams with
     | [] -> energized
@@ -87,7 +87,22 @@ let part1 =
           let qs = next map p dir |> List.map (fun dir -> (step p dir, dir)) in
           aux energized seen (List.append rest qs)
   in
-  aux CS.empty BS.empty [ ((0, 0), Right) ] |> CS.cardinal
+  aux CS.empty BS.empty [ (p, dir) ] |> CS.cardinal
 
-let part2 = 0
+let part1 = walk map (0, 0) Right
+
+let starts =
+  let mx, my =
+    CM.fold (fun (x, y) _ (mx, my) -> (max x mx, max y my)) map (0, 0)
+  in
+  let downs = Seq.init (mx + 1) (fun x -> ((x, 0), Down))
+  and ups = Seq.init (mx + 1) (fun x -> ((x, my), Up))
+  and lefts = Seq.init (my + 1) (fun y -> ((mx, y), Left))
+  and rights = Seq.init (my + 1) (fun y -> ((0, y), Right)) in
+  Seq.append downs ups |> Seq.append lefts |> Seq.append rights
+
+let part2 =
+  let walk = walk map in
+  Seq.fold (fun acc (p, dir) -> max acc (walk p dir)) 0 starts
+
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
