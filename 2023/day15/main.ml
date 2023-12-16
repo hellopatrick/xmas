@@ -39,8 +39,7 @@ let part2 =
 
   Array.foldi
     (fun acc i box ->
-      acc
-      + List.foldi (fun acc j (_, fp) -> acc + ((i + 1) * (j + 1) * fp)) 0 box)
+      List.foldi (fun acc j (_, fp) -> acc + ((i + 1) * (j + 1) * fp)) acc box)
     0 boxes
 
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
