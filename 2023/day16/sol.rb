@@ -90,10 +90,10 @@ part_one = visited.count { |_k, v| !v.empty? }
 
 puts "#{Time.now} part_one=#{part_one}"
 
-easts = (0...size).lazy.map { |y| walk(grid, [0, y], :east).count { |_k, v| !v.empty? } }.max
-wests = (0...size).lazy.map { |y| walk(grid, [size - 1, y], :west).count { |_k, v| !v.empty? } }.max
-norths = (0...size).lazy.map { |x| walk(grid, [x, size - 1], :north).count { |_k, v| !v.empty? } }.max
-souths = (0...size).lazy.map { |x| walk(grid, [x, 0], :south).count { |_k, v| !v.empty? } }.max
+easts = (0...size).map { |y| walk(grid, [0, y], :east).count { |_k, v| !v.empty? } }.max
+wests = (0...size).map { |y| walk(grid, [size - 1, y], :west).count { |_k, v| !v.empty? } }.max
+norths = (0...size).map { |x| walk(grid, [x, size - 1], :north).count { |_k, v| !v.empty? } }.max
+souths = (0...size).map { |x| walk(grid, [x, 0], :south).count { |_k, v| !v.empty? } }.max
 
 part_two = [easts, wests, norths, souths].max
 
