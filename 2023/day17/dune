@@ -1,7 +1,9 @@
 (executable
  (public_name day17.2023)
  (name main)
- (libraries xmas containers))
+ (preprocess
+  (pps ppx_deriving.eq))
+ (libraries xmas containers containers-data iter))
 
 (cram
  (deps %{bin:day17.2023}))
