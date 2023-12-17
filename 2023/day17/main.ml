@@ -1,5 +1,4 @@
 open Containers
-module CM = Xmas.Coordinate.Map
 
 module Turn = struct
   type t = Left | Right [@@deriving eq]
@@ -38,14 +37,9 @@ end
 
 module Input = struct
   let parse lines =
-    List.foldi
-      (fun acc y line ->
-        String.foldi
-          (fun acc x c ->
-            let i = int_of_char c - int_of_char '0' in
-            CM.add (x, y) i acc)
-          acc line)
-      CM.empty lines
+    let to_int c = int_of_char c - int_of_char '0' in
+    List.map (fun row -> String.to_array row |> Array.map to_int) lines
+    |> Array.of_list
 end
 
 let graph city f =
@@ -54,7 +48,7 @@ let graph city f =
       let edges =
         f c
         |> List.filter_map (fun (c : Crucible.t) ->
-               CM.get c.pos city |> Option.map (fun v -> (v, c)))
+               Xmas.Grid.get city c.pos |> Option.map (fun v -> (v, c)))
       in
       List.to_iter edges)
 
@@ -93,7 +87,7 @@ let part1 =
           { pos = nr; dir = right; momentum = 0 };
         ]
     in
-    List.filter (fun Crucible.{ pos; _ } -> CM.mem pos city) possiblities
+    List.filter (fun Crucible.{ pos; _ } -> Xmas.Grid.mem city pos) possiblities
   in
   walk (graph city neighbors) (goal, goal)
 
@@ -120,7 +114,7 @@ let part2 =
           { pos = nr; dir = right; momentum = 0 };
         ]
     in
-    List.filter (fun Crucible.{ pos; _ } -> CM.mem pos city) possiblities
+    List.filter (fun Crucible.{ pos; _ } -> Xmas.Grid.mem city pos) possiblities
   in
   walk (graph city neighbors) (goal, goal)
 
