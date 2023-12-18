@@ -40,6 +40,7 @@ bin: [
   "_build/install/default/bin/day17.2022"
   "_build/install/default/bin/day17.2023"
   "_build/install/default/bin/day18.2022"
+  "_build/install/default/bin/day18.2023"
   "_build/install/default/bin/day19.2022"
   "_build/install/default/bin/day2.2018"
   "_build/install/default/bin/day20.2022"
