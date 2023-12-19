@@ -69,7 +69,8 @@ module Rule = struct
     | '>' -> { field; op = GreaterThan v; outcome }
     | _ -> failwith "invalid op"
 
-  let build_catch_all outcome = { field = ""; op = All; outcome }
+  let build_catch_all outcome =
+    { field = ""; op = All; outcome = Outcome.of_string outcome }
 
   let run part t =
     match t.op with
@@ -101,12 +102,7 @@ module Input = struct
         identifier
     in
 
-    let catch_all =
-      identifier >>| function
-      | "A" -> Rule.build_catch_all Outcome.Accept
-      | "R" -> Rule.build_catch_all Outcome.Reject
-      | next -> Rule.build_catch_all (Outcome.Transfer next)
-    in
+    let catch_all = identifier >>| Rule.build_catch_all in
 
     let rules = sep_by1 (char ',') (pred <|> catch_all) <* char '}' in
 
@@ -139,7 +135,7 @@ let part1 =
     match SM.get wn workflows with
     | None -> failwith "missing workflow name!"
     | Some wf -> (
-        match List.find_map (fun f -> Rule.run part f) wf with
+        match List.find_map (Rule.run part) wf with
         | Some (Outcome.Transfer wn) -> run workflows wn part
         | Some Outcome.Accept -> (part, Outcome.Accept)
         | Some Outcome.Reject -> (part, Outcome.Reject)
