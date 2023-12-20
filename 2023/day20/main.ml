@@ -1,7 +1,7 @@
 open Containers
 module SM = Map.Make (String)
 
-module Mod = struct
+module Gate = struct
   type t =
     | FlipFlop of bool
     | Conjunction of (bool * int) SM.t
@@ -17,14 +17,14 @@ module Mod = struct
 end
 
 module State = struct
-  type t = { modules : Mod.t SM.t; outputs : string list SM.t }
+  type t = { gates : Gate.t SM.t; outputs : string list SM.t }
 
-  let empty = { modules = SM.empty; outputs = SM.empty }
+  let empty = { gates = SM.empty; outputs = SM.empty }
 
-  let get_mod name t =
-    match SM.get name t.modules with None -> Mod.Sink | Some m -> m
+  let gate name t =
+    match SM.get name t.gates with None -> Gate.Sink | Some m -> m
 
-  let get_outputs name t =
+  let outputs name t =
     match SM.get name t.outputs with None -> [] | Some o -> o
 
   let patch t =
@@ -34,40 +34,40 @@ module State = struct
           (fun t o ->
             {
               t with
-              modules =
+              gates =
                 SM.update o
                   (function
                     | None -> None
-                    | Some (Mod.Conjunction v) ->
-                        Some (Mod.Conjunction (SM.add name (false, 0) v))
+                    | Some (Gate.Conjunction v) ->
+                        Some (Gate.Conjunction (SM.add name (false, 0) v))
                     | Some m -> Some m)
-                  t.modules;
+                  t.gates;
             })
           t outs)
       t.outputs t
 
   let add name m outs t =
-    let modules' = SM.add name m t.modules in
+    let gates' = SM.add name m t.gates in
     let outputs' = SM.add name outs t.outputs in
-    { modules = modules'; outputs = outputs' }
+    { gates = gates'; outputs = outputs' }
 
   let set name m t =
-    let modules' = SM.add name m t.modules in
-    { t with modules = modules' }
+    let gates' = SM.add name m t.gates in
+    { t with gates = gates' }
 
   let exec n (src, pulse, dest) t =
-    let m = get_mod dest t in
-    let outputs = get_outputs dest t in
+    let m = gate dest t in
+    let outputs = outputs dest t in
     match m with
-    | Mod.Sink -> ([], t)
-    | Mod.Broadcaster -> (List.map (fun o -> (dest, pulse, o)) outputs, t)
-    | Mod.FlipFlop v ->
+    | Gate.Sink -> ([], t)
+    | Gate.Broadcaster -> (List.map (fun o -> (dest, pulse, o)) outputs, t)
+    | Gate.FlipFlop v ->
         if pulse then ([], t)
         else
           let pulse' = not v in
           ( List.map (fun o -> (dest, pulse', o)) outputs,
-            set dest (Mod.FlipFlop pulse') t )
-    | Mod.Conjunction v ->
+            set dest (Gate.FlipFlop pulse') t )
+    | Gate.Conjunction v ->
         let v' =
           SM.update src
             (function
@@ -77,7 +77,7 @@ module State = struct
         in
         let e = SM.exists (fun _ (h, _) -> not h) v' in
         ( List.map (fun o -> (dest, e, o)) outputs,
-          set dest (Mod.Conjunction v') t )
+          set dest (Gate.Conjunction v') t )
 end
 
 module Input = struct
@@ -85,7 +85,7 @@ module Input = struct
     match String.split ~by:" -> " line with
     | [ input; outputs ] ->
         let outs = String.split ~by:", " outputs in
-        (Mod.name input, Mod.of_string input, outs)
+        (Gate.name input, Gate.of_string input, outs)
     | _ -> failwith "invalid line"
 
   let parse input =
@@ -126,8 +126,8 @@ let part2 =
   let complete v = SM.for_all (fun k (_, n) -> n > 0) v in
   let rec press n t =
     let _, t' = run n t in
-    match State.get_mod "kl" t' with
-    | Mod.Conjunction v -> if complete v then v else press (n + 1) t'
+    match State.gate "kl" t' with
+    | Gate.Conjunction v -> if complete v then v else press (n + 1) t'
     | _ -> failwith "impossible."
   in
   let s = press 1 start in
