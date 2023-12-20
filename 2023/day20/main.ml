@@ -59,7 +59,7 @@ module State = struct
     let m = get_mod dest t in
     let outputs = get_outputs dest t in
     match m with
-    | Mod.Sink -> if not pulse then ([], t) else ([], t)
+    | Mod.Sink -> ([], t)
     | Mod.Broadcaster -> (List.map (fun o -> (dest, pulse, o)) outputs, t)
     | Mod.FlipFlop v ->
         if pulse then ([], t)
@@ -71,12 +71,11 @@ module State = struct
         let v' =
           SM.update src
             (function
-              | None -> None
+              | None -> Some (pulse, if pulse then n else 0)
               | Some (prev, n') -> Some (pulse, if pulse then n else n'))
             v
         in
         let e = SM.exists (fun _ (h, _) -> not h) v' in
-
         ( List.map (fun o -> (dest, e, o)) outputs,
           set dest (Mod.Conjunction v') t )
 end
