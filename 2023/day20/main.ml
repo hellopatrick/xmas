@@ -72,7 +72,7 @@ module State = struct
           SM.update src
             (function
               | None -> Some (pulse, if pulse then n else 0)
-              | Some (prev, n') -> Some (pulse, if pulse then n else n'))
+              | Some (_, n') -> Some (pulse, if pulse then n else n'))
             v
         in
         let e = SM.exists (fun _ (h, _) -> not h) v' in
@@ -123,7 +123,7 @@ let part1 =
   h * l
 
 let part2 =
-  let complete v = SM.for_all (fun k (_, n) -> n > 0) v in
+  let complete v = SM.for_all (fun _ (_, n) -> n > 0) v in
   let rec press n t =
     let _, t' = run n t in
     match State.gate "kl" t' with
@@ -131,7 +131,6 @@ let part2 =
     | _ -> failwith "impossible."
   in
   let s = press 1 start in
-
-  SM.fold (fun k (_, a) acc -> Xmas.Integer.lcm acc a) s 1
+  SM.fold (fun _ (_, a) acc -> Xmas.Integer.lcm acc a) s 1
 
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
