@@ -151,10 +151,13 @@ let prune graph =
 
 let part1 =
   let forest = Input.icy input in
-  dfs forest start goal |> Option.get_exn_or "?"
+  dfs forest start goal
 
 let part2 =
   let forest = Input.dry input in
-  dfs (prune forest) start goal |> Option.get_exn_or "?"
+  dfs (prune forest) start goal
 
-let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
+let _ =
+  let open Option.Infix in
+  let+ part1 = part1 and+ part2 = part2 in
+  Printf.printf "part1 = %d ; part2 = %d" part1 part2
