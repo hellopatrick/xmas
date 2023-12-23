@@ -48,4 +48,4 @@ https://adventofcode.com/$year/day/$num
   part1 = 0 ; part2 = 0
 EOF
 
-dune build
+dune build "$path"
