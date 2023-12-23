@@ -33,6 +33,68 @@ module Input = struct
       (fun line -> String.to_array line |> Array.map Square.of_char)
       lines
     |> Array.of_list
+
+  let as_grid lines =
+    List.map
+      (fun line -> String.to_array line |> Array.map Square.of_char)
+      lines
+    |> Array.of_list
+
+  let icy lines =
+    let grid = as_grid lines in
+    Array.foldi
+      (fun acc y row ->
+        Array.foldi
+          (fun acc x sq ->
+            match sq with
+            | Square.Forest -> acc
+            | Square.UpSlope -> CM.add (x, y) [ ((x, y - 1), 1) ] acc
+            | Square.DownSlope -> CM.add (x, y) [ ((x, y + 1), 1) ] acc
+            | Square.LeftSlope -> CM.add (x, y) [ ((x - 1, y), 1) ] acc
+            | Square.RightSlope -> CM.add (x, y) [ ((x + 1, y), 1) ] acc
+            | _ ->
+                CM.add (x, y)
+                  ([
+                     (x - 1, y, Dir.Left);
+                     (x + 1, y, Dir.Right);
+                     (x, y - 1, Dir.Up);
+                     (x, y + 1, Dir.Down);
+                   ]
+                  |> List.filter (fun (x, y, dir) ->
+                         match Xmas.Grid.get grid (x, y) with
+                         | None -> false
+                         | Some Square.Forest -> false
+                         | Some Square.Path -> true
+                         | Some Square.UpSlope -> Dir.equal Up dir
+                         | Some Square.DownSlope -> Dir.equal Down dir
+                         | Some Square.LeftSlope -> Dir.equal Left dir
+                         | Some Square.RightSlope -> Dir.equal Right dir)
+                  |> List.map (fun (x, y, _) -> ((x, y), 1)))
+                  acc)
+          acc row)
+      CM.empty grid
+
+  let dry lines =
+    let grid = as_grid lines in
+
+    Array.foldi
+      (fun acc y row ->
+        Array.foldi
+          (fun acc x sq ->
+            match sq with
+            | Square.Forest -> acc
+            | _ ->
+                let neighbors =
+                  [ (x - 1, y); (x + 1, y); (x, y - 1); (x, y + 1) ]
+                  |> List.filter_map (fun (x', y') ->
+                         match Xmas.Grid.get grid (x', y') with
+                         | None -> None
+                         | Some Square.Forest -> None
+                         | Some _ -> Some ((x', y'), 1))
+                in
+                CM.add (x, y) neighbors acc)
+          acc row)
+      CM.empty grid
 end
 
 let input = IO.read_lines_l stdin |> List.filter Xmas.Str.is_not_empty
@@ -43,17 +105,17 @@ let goal =
   let n = Array.length forest in
   (n - 2, n - 1)
 
-let dfs forest succ start goal =
-  let rec aux visited v steps =
+let dfs forest start goal =
+  let rec aux visited v =
     if Xmas.Coordinate.equal v goal then Some 0
     else if CS.mem v visited then None
     else
       let visited' = CS.add v visited in
-      let neighbors = succ forest v in
+      let neighbors = CM.get_or v forest ~default:[] in
       let distances =
         List.filter_map
           (fun ((x, y), dist) ->
-            match aux visited' (x, y) (steps + 1) with
+            match aux visited' (x, y) with
             | None -> None
             | Some d -> Some (d + dist))
           neighbors
@@ -62,28 +124,7 @@ let dfs forest succ start goal =
       | [] -> None
       | _ -> Some (List.fold_left max 0 distances)
   in
-  aux CS.empty start 0
-
-let part1 =
-  let succ grid (x, y) =
-    [
-      (x - 1, y, Dir.Left);
-      (x + 1, y, Dir.Right);
-      (x, y - 1, Dir.Up);
-      (x, y + 1, Dir.Down);
-    ]
-    |> List.filter (fun (x, y, dir) ->
-           match Xmas.Grid.get grid (x, y) with
-           | None -> false
-           | Some Square.Forest -> false
-           | Some Square.Path -> true
-           | Some Square.UpSlope -> Dir.equal Up dir
-           | Some Square.DownSlope -> Dir.equal Down dir
-           | Some Square.LeftSlope -> Dir.equal Left dir
-           | Some Square.RightSlope -> Dir.equal Right dir)
-    |> List.map (fun (x, y, _) -> ((x, y), 1))
-  in
-  dfs forest succ start goal |> Option.get_exn_or "?"
+  aux CS.empty start
 
 let follow_path graph start curr =
   let get n = CM.get_or n graph ~default:[] in
@@ -96,7 +137,7 @@ let follow_path graph start curr =
   in
   aux start curr 1
 
-let consolidate graph =
+let prune graph =
   CM.fold
     (fun (x, y) neighbors acc ->
       if List.length neighbors <> 2 then
@@ -108,31 +149,12 @@ let consolidate graph =
       else acc)
     graph CM.empty
 
-let prune forest =
-  let adj =
-    Array.foldi
-      (fun acc y row ->
-        Array.foldi
-          (fun acc x sq ->
-            match sq with
-            | Square.Forest -> acc
-            | _ ->
-                let neighbors =
-                  [ (x - 1, y); (x + 1, y); (x, y - 1); (x, y + 1) ]
-                  |> List.filter_map (fun (x', y') ->
-                         match Xmas.Grid.get forest (x', y') with
-                         | None -> None
-                         | Some Square.Forest -> None
-                         | Some _ -> Some ((x', y'), 1))
-                in
-                CM.add (x, y) neighbors acc)
-          acc row)
-      CM.empty forest
-  in
-  consolidate adj
+let part1 =
+  let forest = Input.icy input in
+  dfs forest start goal |> Option.get_exn_or "?"
 
 let part2 =
-  let succ forest (x, y) = CM.get_or (x, y) forest ~default:[] in
-  dfs (prune forest) succ start goal |> Option.get_exn_or "?"
+  let forest = Input.dry input in
+  dfs (prune forest) start goal |> Option.get_exn_or "?"
 
 let _ = Printf.printf "part1 = %d ; part2 = %d" part1 part2
