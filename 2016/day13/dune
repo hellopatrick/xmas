@@ -1,0 +1,7 @@
+(executable
+ (public_name day13.2016)
+ (name main)
+ (libraries xmas containers containers-data iter))
+
+(cram
+ (deps %{bin:day13.2016}))
